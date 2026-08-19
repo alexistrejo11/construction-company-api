@@ -1,6 +1,6 @@
 package io.github.alexisTrejo11.construction.company.modules.project.features.getsummary;
 
-import io.github.alexisTrejo11.construction.company.modules.project.shared.persistence.entity.ProjectEntity;
+import io.github.alexisTrejo11.construction.company.modules.project.shared.domain.Project;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
@@ -11,7 +11,7 @@ public interface GetProjectSummaryMapper {
   @Mapping(target = "spentBudget", expression = "java(java.math.BigDecimal.ZERO)")
   @Mapping(target = "remainingBudget", source = "totalBudget")
   @Mapping(target = "completionPercentage", expression = "java(0.0)")
-  @Mapping(target = "totalPhases", expression = "java(project.getPhases() == null ? 0 : project.getPhases().size())")
-  @Mapping(target = "totalMembers", expression = "java(project.getMembers() == null ? 0 : project.getMembers().size())")
-  GetProjectSummaryResponse toResponse(ProjectEntity project);
+  @Mapping(target = "totalPhases", constant = "0")
+  @Mapping(target = "totalMembers", constant = "0")
+  GetProjectSummaryResponse toResponse(Project project);
 }

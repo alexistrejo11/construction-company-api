@@ -1,13 +1,27 @@
-FROM gradle:8.5-jdk17 AS build
+FROM eclipse-temurin:26-jdk AS build
+
+WORKDIR /workspace
+
+COPY gradlew build.gradle settings.gradle ./
+COPY gradle gradle
+
+RUN chmod +x gradlew
+RUN ./gradlew --no-daemon dependencies
+
+COPY src src
+
+RUN ./gradlew --no-daemon bootJar
+
+FROM eclipse-temurin:26-jre
+
 WORKDIR /app
-COPY docker .
-RUN gradle build -x test
 
-FROM eclipse-temurin:17-jre-jammy
+RUN groupadd --system spring && useradd --system --gid spring spring
+RUN mkdir uploads && chown spring:spring uploads
 
-WORKDIR /app
+COPY --from=build /workspace/build/libs/*.jar app.jar
 
-COPY --from=build /app/build/libs/*.jar app.jar
+USER spring
 
 EXPOSE 8080
 

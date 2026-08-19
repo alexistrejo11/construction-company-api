@@ -121,7 +121,7 @@ The initial in-process event approach is appropriate for the portfolio project. 
 
 ## Current Implementation Status
 
-The current code mixes notification persistence, expense-specific event mapping, and email delivery inside `NotificationService`. It also exposes a generic notification creation endpoint and uses legacy `/v1/api` routes. This is transitional code and should not be copied into new feature slices.
+The current code mixes notification persistence, expense-specific event mapping, and email delivery inside `NotificationService`. It also exposes a generic notification creation endpoint. This is transitional code and should not be copied into new feature slices.
 
 ## Classification
 

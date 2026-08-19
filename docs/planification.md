@@ -23,6 +23,8 @@ The confirmed structural architecture is documented in `docs/architecture.md`.
 
 The complete endpoint catalog is maintained exclusively in `docs/api/endpoints.md`. Do not add endpoint definitions to this planning file.
 
+The ordered implementation checklist is maintained in `docs/implementation-plan.md`.
+
 ## Cross-Cutting Conventions
 
 - Error handling: `docs/conventions/error-handling.md`

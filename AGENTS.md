@@ -2,37 +2,30 @@
 
 ## Project Shape
 
-- This is a single-module Gradle project named `construction-company-api`.
-- The application entrypoint is `src/main/java/io/github/alexisTrejo11/construction/company/ConstructionCompanyApplication.java`.
-- The backend is Spring Boot 3.5.16 and the Gradle toolchain is Java 26. Use the checked-in `./gradlew` wrapper rather than a system Gradle installation.
-- Business code is organized under `modules/<bounded-area>/`. Most newer areas use feature slices such as `features/create`, with a controller, command/query, and handler; shared domain, DTO, mapper, and persistence types live under that module's `shared` package.
-- Cross-cutting configuration is under `config/`; reusable result, response, exception, authentication, and persistence types are under `shared/`.
+- This is a single-module Gradle modular monolith. The Spring Boot entrypoint is `src/main/java/io/github/alexisTrejo11/construction/company/ConstructionCompanyApplication.java`.
+- Use the checked-in `./gradlew` wrapper. The build requires Java 26 (the wrapper uses Gradle 9.4.0); Spring Boot is 3.5.16.
+- Business capabilities live in `modules/<module>/` as vertical feature slices: a use case normally has its controller, command/query, and handler under `features/<use-case>/`. Put types shared by feature slices in the closest `shared/` package; root `shared/` is only for cross-module technical primitives.
+- Handlers own use-case orchestration and transaction boundaries. Controllers validate and translate HTTP only; JPA entities may contain domain behavior but must not depend on repositories, HTTP, or feature types.
+- `docs/architecture.md` defines the confirmed package and ownership conventions. `docs/planification.md` is planning context, not evidence of implemented behavior or API contracts.
 
-## Commands
+## Commands And Verification
 
 - Compile production code: `./gradlew compileJava`.
-- Run the application: `./gradlew bootRun`.
-- Build the executable jar: `./gradlew bootJar`.
-- Run the test task: `./gradlew test`.
-- There are currently no Java test sources, and `build.gradle` disables the `test` task (`test { enabled = false }`); do not treat a successful `./gradlew test` as test coverage.
-- No lint, formatter, or static-analysis task is configured in `build.gradle`.
+- Run locally: `./gradlew bootRun`; build the executable jar: `./gradlew bootJar`.
+- `./gradlew test` is disabled in `build.gradle`, and there are no Java test sources. The H2 `application-test.yml` is configuration only, so a successful test task is not test coverage.
+- No lint, formatter, or static-analysis Gradle task is configured.
 
-## Runtime Configuration
+## Runtime And Persistence
 
-- Copy `.env.example` to `.env` for local values; `.env` is ignored and must not be committed.
-- `bootRun` loads `.env` itself and passes its key/value pairs as system properties and environment variables.
-- The default Spring profile is `dev`. It uses SQLite at `DB_FILE` (default `dev_construction.db`), Hibernate `ddl-auto=update`, and disables Flyway.
-- The `prod` profile expects PostgreSQL variables (`DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME`, `DB_PASSWORD`), validates the schema, and enables Flyway migrations from `src/main/resources/db/migration/`.
-- The test configuration is H2 in-memory with `create-drop`, but it is not currently exercised because tests are disabled and no Java tests are present.
+- Copy `.env.example` to the ignored `.env` for local secrets and settings. Spring imports `.env`; `bootRun` also explicitly forwards its values as system properties and environment variables.
+- The default `dev` profile uses SQLite (`DB_FILE`, default `dev_construction.db`), Hibernate `ddl-auto=update`, and disables Flyway. The `prod` profile uses PostgreSQL (`DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME`, `DB_PASSWORD`), validates Hibernate mappings, and enables migrations from `src/main/resources/db/migration/`.
+- Production schema changes require a new Flyway migration; do not rely on development's Hibernate schema update.
 
-## Implementation Constraints
+## API And Error Conventions
 
-- Preserve the existing `Result<T>` flow for expected business outcomes: handlers return `Result`, and controllers resolve failures through `AppErrorResolver` rather than throwing for ordinary conflicts, validation failures, or not-found cases.
-- Keep transactional behavior in handlers/services where it already exists; do not move persistence logic into controllers without a concrete reason.
-- Check the actual controller mappings before adding endpoints. Current feature controllers use `/v2/api/...`, while `SecurityConfig` still contains `/v1/api/...` matcher rules; route and authorization changes must account for this mismatch.
-- Treat `docs/planification.md` as planning material, not proof that a planned module or endpoint already exists. Confirm behavior in the Java sources and configuration first.
-- Database schema changes for production belong in a new Flyway migration under `src/main/resources/db/migration/`; do not rely on `ddl-auto=update` for production.
+- Preserve expected business outcomes through `Result<T>` in handlers. Controllers must map failed results with `AppErrorResolver.handleResult(...)` and successful results with `ResponseWrapper`; do not throw ordinary conflict, validation, business-rule, or not-found failures.
+- API routes use `/v2/api/**`. Verify mappings and authorization together when adding or changing routes.
 
-## Known Build Caveats
+## Build Caveat
 
-- `Dockerfile` uses Gradle 8.5/JDK 17 and copies a `docker` directory, but the repository has no tracked `docker/` directory and the Gradle build requires Java 26. Verify or fix this before treating the Docker image flow as functional.
+- The checked-in `Dockerfile` is not functional for this repository: it uses Gradle/JDK 17 and copies a nonexistent `docker/` directory, while the Gradle build requires Java 26. Fix or verify it before using the image flow.

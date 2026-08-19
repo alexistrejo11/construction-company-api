@@ -44,3 +44,6 @@ replay_pid*
 build/
 bin/
 out/
+
+# Development databases
+*.db

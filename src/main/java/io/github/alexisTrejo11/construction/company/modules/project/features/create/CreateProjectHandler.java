@@ -1,7 +1,7 @@
 package io.github.alexisTrejo11.construction.company.modules.project.features.create;
 
 import io.github.alexisTrejo11.construction.company.modules.project.shared.persistence.ProjectRepository;
-import io.github.alexisTrejo11.construction.company.modules.project.shared.persistence.entity.ProjectEntity;
+import io.github.alexisTrejo11.construction.company.modules.project.shared.domain.Project;
 import io.github.alexisTrejo11.construction.company.shared.Result;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,14 +19,14 @@ public class CreateProjectHandler {
       return Result.conflict("Code already exists");
     }
 
-    ProjectEntity entity = mapper.toEntity(request);
+    Project entity = mapper.toEntity(request);
 
     Result<Void> validateResult = entity.validate();
     if (!validateResult.isSuccess()) {
       return Result.business(validateResult.getErrorMessage());
     }
 
-    ProjectEntity savedEntity = repository.save(entity);
+    Project savedEntity = repository.save(entity);
     return Result.success(new CreateProjectResponse(savedEntity.getId()));
   }
 }

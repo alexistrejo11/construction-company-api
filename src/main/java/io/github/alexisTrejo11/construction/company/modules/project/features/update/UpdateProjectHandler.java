@@ -3,7 +3,7 @@ package io.github.alexisTrejo11.construction.company.modules.project.features.up
 import io.github.alexisTrejo11.construction.company.modules.project.shared.dto.ProjectResponse;
 import io.github.alexisTrejo11.construction.company.modules.project.shared.mapper.ProjectResponseMapper;
 import io.github.alexisTrejo11.construction.company.modules.project.shared.persistence.ProjectRepository;
-import io.github.alexisTrejo11.construction.company.modules.project.shared.persistence.entity.ProjectEntity;
+import io.github.alexisTrejo11.construction.company.modules.project.shared.domain.Project;
 import io.github.alexisTrejo11.construction.company.shared.Result;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,7 +22,7 @@ public class UpdateProjectHandler {
         .orElseGet(() -> Result.notFound("Project not found"));
   }
 
-  private Result<ProjectResponse> apply(ProjectEntity project, UpdateProjectCommand command) {
+  private Result<ProjectResponse> apply(Project project, UpdateProjectCommand command) {
     if (command.name() != null) {
       project.setName(command.name());
     }

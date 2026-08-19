@@ -2,7 +2,7 @@ package io.github.alexisTrejo11.construction.company.modules.project.shared.pers
 
 import io.github.alexisTrejo11.construction.company.modules.project.shared.domain.ProjectStatus;
 import io.github.alexisTrejo11.construction.company.modules.project.shared.dto.ProjectsGlobalSummaryResponse;
-import io.github.alexisTrejo11.construction.company.modules.project.shared.persistence.entity.ProjectEntity;
+import io.github.alexisTrejo11.construction.company.modules.project.shared.domain.Project;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,17 +11,16 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
-public interface ProjectRepository extends JpaRepository<ProjectEntity, Long> {
+public interface ProjectRepository extends JpaRepository<Project, Long> {
 
   @Query("""
-        SELECT p FROM ProjectEntity p
-        WHERE p.deletedAt IS NULL
-          AND (:search IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%'))
+        SELECT p FROM Project p
+        WHERE (:search IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%'))
                OR LOWER(p.code) LIKE LOWER(CONCAT('%', :search, '%')))
           AND (:status IS NULL OR p.status = :status)
           AND (:city IS NULL OR LOWER(p.location.city) LIKE LOWER(CONCAT('%', :city, '%')))
     """)
-  Page<ProjectEntity> findWithFilters(
+  Page<Project> findWithFilters(
       @Param("search") String search,
       @Param("status") ProjectStatus status,
       @Param("city") String city,
@@ -29,12 +28,11 @@ public interface ProjectRepository extends JpaRepository<ProjectEntity, Long> {
   );
 
   @Query("""
-        SELECT DISTINCT p FROM ProjectEntity p
-        JOIN p.members m
-        WHERE p.deletedAt IS NULL
-          AND m.user.id = :userId
+        SELECT DISTINCT p FROM Project p
+        JOIN io.github.alexisTrejo11.construction.company.modules.project.members.shared.domain.ProjectMember m ON m.project = p
+        WHERE m.user.id = :userId
     """)
-  Page<ProjectEntity> findByUserIdWithMembers(@Param("userId") Long userId, Pageable pageable);
+  Page<Project> findByUserIdWithMembers(@Param("userId") Long userId, Pageable pageable);
 
   @Query("""
         SELECT new io.github.alexisTrejo11.construction.company.modules.project.shared.dto.ProjectsGlobalSummaryResponse(
@@ -44,14 +42,13 @@ public interface ProjectRepository extends JpaRepository<ProjectEntity, Long> {
             COALESCE(SUM(CASE WHEN p.status = io.github.alexisTrejo11.construction.company.modules.project.shared.domain.ProjectStatus.ON_HOLD THEN 1L ELSE 0L END), 0L),
             COALESCE(SUM(CASE WHEN p.status = io.github.alexisTrejo11.construction.company.modules.project.shared.domain.ProjectStatus.COMPLETED THEN 1L ELSE 0L END), 0L),
             COALESCE(SUM(CASE WHEN p.status = io.github.alexisTrejo11.construction.company.modules.project.shared.domain.ProjectStatus.CANCELLED THEN 1L ELSE 0L END), 0L),
-            COALESCE(SUM(p.totalBudget), 0)
+             COALESCE(SUM(p.totalBudget), 0)
         )
-        FROM ProjectEntity p
-        WHERE p.deletedAt IS NULL
+        FROM Project p
     """)
   ProjectsGlobalSummaryResponse getGlobalSummary();
 
-  Optional<ProjectEntity> findByCode(String code);
+  Optional<Project> findByCode(String code);
 
   boolean existsByCode(String code);
 }

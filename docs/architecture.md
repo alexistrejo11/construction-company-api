@@ -46,7 +46,7 @@ The shape is a placement guide, not a requirement to create every directory. Opt
 
 Feature-specific requests, responses, mappers, and helpers remain inside the feature. Stable concepts reused across feature slices belong to the closest applicable `shared/` package: first the nested area's shared package, then the parent module's shared package.
 
-JPA entities normally live under `shared/persistence/entity/` to keep persistence types discoverable. They still act as domain entities and may own business behavior; their package location does not make them an anemic persistence-only model.
+JPA entities live in the closest module or nested area's `shared/domain/` package because they are also the domain model. Their JPA annotations support persistence but do not create a separate persistence representation. Repositories remain under the closest `shared/persistence/` package. The root `shared/persistence/` package is reserved for cross-module technical persistence primitives, such as a mapped identity and audit base class.
 
 ## Vertical Feature Slices
 
