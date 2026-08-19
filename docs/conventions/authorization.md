@@ -1,0 +1,121 @@
+# Authorization
+
+## Status
+
+This document defines the initial authorization design. The complete role-to-permission matrix will be filled after the domain use cases are finalized.
+
+## Authorization Model
+
+Authorization combines three concepts:
+
+```text
+Global role:
+  the user's organizational responsibility
+
+Permission:
+  a concrete action the user may perform
+
+Project membership:
+  the project scope in which a project-scoped permission may apply
+```
+
+A normal project operation requires:
+
+```text
+authenticated user
+    + required permission from a global role
+    + active membership in the target project
+```
+
+Global administrative permissions may bypass project membership only when that behavior is explicitly defined for the permission.
+
+## Permission Representation
+
+Permissions should be represented by a typed enum rather than string literals spread through controllers and handlers:
+
+```java
+public enum Permission {
+    PROJECT_READ,
+    PROJECT_UPDATE,
+    PHASE_CREATE,
+    PHASE_UPDATE,
+    PHASE_CHANGE_STATUS,
+    MEMBER_MANAGE,
+    BUDGET_UPDATE,
+    EXPENSE_CREATE,
+    EXPENSE_APPROVE
+}
+```
+
+The list is illustrative and must be derived from confirmed use cases. A permission represents an action, not a person or job title.
+
+## Role Permission Catalog
+
+The mapping from global roles to permissions should live in one focused catalog rather than in controllers or individual handlers:
+
+```java
+public final class RolePermissionCatalog {
+    public static Set<Permission> permissionsFor(UserRole role) {
+        // Return the immutable permission set for this role.
+    }
+}
+```
+
+The catalog combines permissions from all roles assigned to a user. Permission sets should be immutable and should not be changed during request processing.
+
+An enum-backed `EnumMap<UserRole, EnumSet<Permission>>` or equivalent typed mapping is preferred initially. A database-backed permission model is not required until permissions must be managed dynamically by administrators.
+
+## Authorization Policy
+
+Authorization should be exposed through focused application policies, not a generic helper imported everywhere:
+
+```java
+public interface ProjectAuthorizationPolicy {
+    Result<Void> requirePermission(
+        UserContext user,
+        Long projectId,
+        Permission permission
+    );
+}
+```
+
+The policy coordinates global permission checks and active project membership checks. It may use a project-member repository, but it must not read `SecurityContextHolder` directly.
+
+Handlers invoke the policy as part of their use-case flow. Controllers do not implement resource authorization, and domain entities do not resolve the current user.
+
+## Check Versus Require
+
+Use a boolean or predicate-style method only for a pure in-memory permission check:
+
+```java
+boolean hasPermission(UserContext user, Permission permission)
+```
+
+Use a result-based method when authorization is part of a use case and may return an expected denial:
+
+```java
+Result<Void> requirePermission(
+    UserContext user,
+    Long projectId,
+    Permission permission
+)
+```
+
+Expected authorization failures should return the application's forbidden result rather than throw an exception during ordinary handler execution.
+
+## Design Pattern Guidance
+
+A Strategy pattern is not required for the initial implementation. Role-to-permission lookup is data, not a family of interchangeable algorithms; a typed catalog is simpler and easier to inspect.
+
+Introduce strategies or composable authorization specifications only when authorization rules genuinely require different algorithms, external policy providers, tenant-specific behavior, or complex reusable combinations. Do not create one strategy class per role by default.
+
+Avoid generic methods such as `hasPermissions` that hide resource scope, membership, or the reason for denial. Prefer focused names such as `requireProjectPermission` or `requireActiveProjectMember`.
+
+## Boundary Rules
+
+- Spring Security establishes authentication and handles coarse route protection.
+- Authorization policies evaluate application and resource-level permissions.
+- Handlers orchestrate authorization policies for their use cases.
+- Controllers do not contain role switches or membership queries.
+- Domain entities enforce business invariants but do not decide who the current user is.
+- Repositories provide membership and resource data but do not own authorization workflows.
