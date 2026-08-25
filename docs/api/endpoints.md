@@ -9,7 +9,7 @@ This is the single endpoint catalog for the target API. It is a planning contrac
 - Base path: `/v2/api`.
 - `PATCH` is used for partial resource updates.
 - State changes use explicit action endpoints when the operation represents a business transition.
-- Permissions listed below are candidates and will be finalized after the domain use cases are completed.
+- Permissions listed below are implemented permissions for the current endpoint set.
 - Project-scoped operations require an active project membership unless an explicit global permission bypass applies.
 - Success and error response envelopes follow `docs/conventions/error-handling.md`.
 - Commands, queries, request DTOs, and response DTOs follow `docs/conventions/validation.md` and `docs/architecture.md`.

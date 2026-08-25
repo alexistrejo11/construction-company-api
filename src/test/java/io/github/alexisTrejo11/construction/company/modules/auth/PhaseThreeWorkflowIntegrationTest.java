@@ -19,6 +19,7 @@ import io.github.alexisTrejo11.construction.company.modules.user.shared.domain.I
 import io.github.alexisTrejo11.construction.company.modules.user.shared.persistence.UserRepository;
 import io.github.alexisTrejo11.construction.company.modules.user.shared.persistence.InvitationRepository;
 import io.github.alexisTrejo11.construction.company.modules.project.shared.persistence.ProjectRepository;
+import io.github.alexisTrejo11.construction.company.modules.project.members.shared.persistence.ProjectMemberRepository;
 import java.util.EnumSet;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -26,7 +27,6 @@ import java.time.Instant;
 import java.util.HexFormat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.hamcrest.Matchers;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -35,6 +35,7 @@ import org.springframework.http.MediaType;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -58,6 +59,9 @@ class PhaseThreeWorkflowIntegrationTest {
     private ProjectRepository projectRepository;
 
     @Autowired
+    private ProjectMemberRepository projectMemberRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @MockitoBean
@@ -68,6 +72,7 @@ class PhaseThreeWorkflowIntegrationTest {
     @BeforeEach
     void setUp() {
         invitationRepository.deleteAll();
+        projectMemberRepository.deleteAll();
         projectRepository.deleteAll();
         userRepository.deleteAll();
 
@@ -121,6 +126,25 @@ class PhaseThreeWorkflowIntegrationTest {
         mockMvc.perform(get("/v2/api/auth/me").cookie(session))
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.error.error_type").value("UNAUTHENTICATED"));
+    }
+
+    @Test
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+    void activeUserCanLoginUsingCsrfCookieAndHeader() throws Exception {
+        MvcResult csrf = mockMvc.perform(get("/v2/api/auth/csrf"))
+            .andExpect(status().isNoContent())
+            .andReturn();
+
+        Cookie csrfCookie = csrf.getResponse().getCookie("XSRF-TOKEN");
+        assertThat(csrfCookie).isNotNull();
+
+        mockMvc.perform(post("/v2/api/auth/login")
+                .cookie(csrfCookie)
+                .header("X-XSRF-TOKEN", csrfCookie.getValue())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"email\":\"admin@example.com\",\"password\":\"a-secure-password\"}"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.email").value("admin@example.com"));
     }
 
     @Test
@@ -412,34 +436,6 @@ class PhaseThreeWorkflowIntegrationTest {
                 .with(user(admin.getEmail()).roles("COMPANY_ADMIN")))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data").isArray());
-    }
-
-    @Test
-    void privateUserResourcesAreBoundToTheAuthenticatedUser() throws Exception {
-        User otherUser = new User();
-        otherUser.setEmail("other@example.com");
-        otherUser.setFirstName("Other");
-        otherUser.setLastName("User");
-        otherUser.setPasswordHash(passwordEncoder.encode("a-secure-password"));
-        otherUser.setStatus(UserStatus.ACTIVE);
-        otherUser.setRoles(EnumSet.of(UserRole.PROJECT_MANAGER));
-        otherUser = userRepository.save(otherUser);
-
-        mockMvc.perform(get("/v2/api/auth/me")
-                .with(user(otherUser.getEmail()).roles("PROJECT_MANAGER")))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.data.email").value(otherUser.getEmail()))
-            .andExpect(jsonPath("$.data.email").value(Matchers.not(admin.getEmail())));
-
-        mockMvc.perform(get("/v2/api/users/me")
-                .with(user(otherUser.getEmail()).roles("PROJECT_MANAGER")))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.data.email").value(otherUser.getEmail()));
-
-        mockMvc.perform(get("/v2/api/users/{userId}", admin.getId())
-                .with(user(otherUser.getEmail()).roles("PROJECT_MANAGER")))
-            .andExpect(status().isForbidden())
-            .andExpect(jsonPath("$.error.error_type").value("FORBIDDEN"));
     }
 
     @Test

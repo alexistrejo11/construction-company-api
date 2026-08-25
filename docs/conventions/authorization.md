@@ -77,11 +77,10 @@ The initial permission set is:
 ```text
 USER_INVITE, USER_READ, USER_UPDATE, USER_ROLE_MANAGE, USER_STATUS_MANAGE,
 PROJECT_CREATE, PROJECT_READ, PROJECT_UPDATE, PROJECT_CHANGE_STATUS,
+PROJECT_RESTORE, PROJECT_GLOBAL_SUMMARY,
 PHASE_CREATE, PHASE_READ, PHASE_UPDATE, PHASE_REORDER,
 MEMBER_MANAGE, MEMBER_READ
 ```
-
-Notification endpoints are not implemented in the current application. Private-resource isolation is verified for `/auth/me`, `/users/me`, and administrative user profiles; notification ownership must be verified with the notification feature in Phase 10.
 
 ## Authorization Policy
 

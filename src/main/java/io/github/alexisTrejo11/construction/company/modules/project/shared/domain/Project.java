@@ -42,15 +42,45 @@ public class Project extends AbstractJpaEntity {
   @Column(name = "actual_end_date")
   private LocalDate actualEndDate;
   public Result<Void> validate() {
+    if (name == null || name.isBlank()) return Result.validation("Project name is required");
+    if (code == null || code.isBlank()) return Result.validation("Project code is required");
     if (totalBudget == null || totalBudget.signum() < 0) return Result.business("Estimated amount cannot be negative");
     if (startDate != null && estimatedEndDate != null && estimatedEndDate.isBefore(startDate)) return Result.business("Estimated end date cannot precede start date");
+    if (startDate != null && actualEndDate != null && actualEndDate.isBefore(startDate)) return Result.business("Actual end date cannot precede start date");
     return Result.success();
   }
 
-  public void updateStatus(ProjectStatus newStatus) {
-    if (status == ProjectStatus.COMPLETED || status == ProjectStatus.CANCELLED) {
-      throw new IllegalStateException("Terminal projects cannot change status");
+  public Result<Void> updateStatus(ProjectStatus newStatus) {
+    if (newStatus == null) {
+      return Result.validation("Project status is required");
     }
+
+    boolean allowed = switch (status) {
+      case PLANNING -> newStatus == ProjectStatus.IN_PROGRESS || newStatus == ProjectStatus.CANCELLED;
+      case IN_PROGRESS -> newStatus == ProjectStatus.ON_HOLD
+          || newStatus == ProjectStatus.COMPLETED
+          || newStatus == ProjectStatus.CANCELLED;
+      case ON_HOLD -> newStatus == ProjectStatus.IN_PROGRESS || newStatus == ProjectStatus.CANCELLED;
+      case COMPLETED, CANCELLED -> false;
+    };
+
+    if (!allowed) {
+      return Result.business("Project status transition is not allowed");
+    }
+
     this.status = newStatus;
+    if (newStatus == ProjectStatus.COMPLETED && actualEndDate == null) {
+      actualEndDate = LocalDate.now();
+    }
+    return Result.success();
+  }
+
+  public Result<Void> restore() {
+    if (status != ProjectStatus.CANCELLED) {
+      return Result.business("Only cancelled projects can be restored");
+    }
+
+    status = ProjectStatus.PLANNING;
+    return Result.success();
   }
 }

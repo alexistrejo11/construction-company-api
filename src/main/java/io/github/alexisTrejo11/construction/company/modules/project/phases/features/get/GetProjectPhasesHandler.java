@@ -1,6 +1,8 @@
 package io.github.alexisTrejo11.construction.company.modules.project.phases.features.get;
 
 import io.github.alexisTrejo11.construction.company.modules.project.shared.dto.ProjectPhaseResponse;
+import io.github.alexisTrejo11.construction.company.modules.project.phases.shared.persistence.ProjectPhaseRepository;
+import io.github.alexisTrejo11.construction.company.modules.project.shared.mapper.ProjectResponseMapper;
 import io.github.alexisTrejo11.construction.company.modules.project.shared.policy.ProjectAuthorizationPolicy;
 import io.github.alexisTrejo11.construction.company.shared.Result;
 import io.github.alexisTrejo11.construction.company.shared.authorization.Permission;
@@ -14,6 +16,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class GetProjectPhasesHandler {
   private final ProjectAuthorizationPolicy authorizationPolicy;
+  private final ProjectPhaseRepository phaseRepository;
+  private final ProjectResponseMapper mapper;
 
   public Result<List<ProjectPhaseResponse>> execute(
       UserContext user,
@@ -24,9 +28,12 @@ public class GetProjectPhasesHandler {
         Permission.PHASE_READ
     );
     if (!authorization.isSuccess()) {
-      return Result.forbidden(authorization.getErrorMessage());
+      return Result.error(authorization.getErrorType(), authorization.getErrorMessage());
     }
 
-    throw new UnsupportedOperationException("Not supported yet.");
+    return Result.success(phaseRepository.findByProjectIdOrderBySequenceOrder(query.projectId())
+        .stream()
+        .map(mapper::toPhaseResponse)
+        .toList());
   }
 }

@@ -12,6 +12,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 @RestControllerAdvice
 @Slf4j
@@ -28,6 +29,17 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(HttpMessageNotReadableException.class)
   ResponseEntity<ResponseWrapper<?>> unreadableRequest(HttpMessageNotReadableException exception) {
     return ResponseEntity.badRequest().body(ResponseWrapper.failure("Request validation failed", Result.ErrorType.VALIDATION, "MALFORMED_REQUEST", null));
+  }
+  @ExceptionHandler(HandlerMethodValidationException.class)
+  ResponseEntity<ResponseWrapper<?>> methodValidation(HandlerMethodValidationException exception) {
+    return ResponseEntity.badRequest().body(
+        ResponseWrapper.failure(
+            "Request validation failed",
+            Result.ErrorType.VALIDATION,
+            "VALIDATION_FAILED",
+            null
+        )
+    );
   }
   @ExceptionHandler(Exception.class)
   ResponseEntity<ResponseWrapper<?>> unexpected(Exception exception) {

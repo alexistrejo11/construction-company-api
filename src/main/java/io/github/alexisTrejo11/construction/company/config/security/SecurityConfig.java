@@ -17,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.session.web.http.DefaultCookieSerializer;
 
 @Configuration
@@ -37,8 +38,21 @@ public class SecurityConfig {
   @Bean SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     var csrf = CookieCsrfTokenRepository.withHttpOnlyFalse();
     csrf.setCookiePath("/");
-     return http.csrf(config -> config.csrfTokenRepository(csrf))
-         .authorizeHttpRequests(auth -> auth.requestMatchers("/v2/api/auth/csrf", "/v2/api/auth/login", "/v2/api/invitations/*/accept", "/swagger-ui/**", "/api-docs/**").permitAll().anyRequest().authenticated())
+    var csrfRequestHandler = new CsrfTokenRequestAttributeHandler();
+
+     return http.csrf(config -> config
+             .csrfTokenRepository(csrf)
+             .csrfTokenRequestHandler(csrfRequestHandler))
+          .authorizeHttpRequests(auth -> auth
+              .requestMatchers(
+                  "/actuator/**",
+                  "/v2/api/auth/csrf",
+                  "/v2/api/auth/login",
+                  "/v2/api/invitations/*/accept",
+                  "/swagger-ui/**",
+                  "/api-docs/**"
+              ).permitAll()
+              .anyRequest().authenticated())
          .securityContext(context -> context
              .securityContextRepository(new HttpSessionSecurityContextRepository())
              .requireExplicitSave(false))

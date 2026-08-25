@@ -7,6 +7,7 @@ import io.github.alexisTrejo11.construction.company.shared.Result;
 import io.github.alexisTrejo11.construction.company.shared.authorization.GlobalAuthorizationPolicy;
 import io.github.alexisTrejo11.construction.company.shared.authorization.Permission;
 import io.github.alexisTrejo11.construction.company.shared.dto.auth.UserContext;
+import io.github.alexisTrejo11.construction.company.shared.dto.PageResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -20,13 +21,23 @@ public class GetMyProjectsHandler {
   private final GlobalAuthorizationPolicy authorizationPolicy;
 
   @Transactional(readOnly = true)
-  public Result<Page<ProjectResponse>> execute(UserContext user, GetMyProjectsQuery query) {
+  public Result<PageResponse<ProjectResponse>> execute(UserContext user, GetMyProjectsQuery query) {
     Result<Void> authorization = authorizationPolicy.requirePermission(user, Permission.PROJECT_READ);
     if (!authorization.isSuccess()) {
       return Result.forbidden(authorization.getErrorMessage());
     }
 
-    return Result.success(repository.findByUserIdWithMembers(query.userId(), query.pageRequest().toPageable())
-        .map(mapper::toResponse));
+    var projects = repository.findByUserIdWithMembers(
+        query.userId(),
+        query.pageRequest().toPageable()
+    ).map(mapper::toResponse);
+
+    return Result.success(new PageResponse<>(
+        projects.getContent(),
+        projects.getNumber() + 1,
+        projects.getSize(),
+        projects.getTotalElements(),
+        projects.getTotalPages()
+    ));
   }
 }

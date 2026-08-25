@@ -43,7 +43,7 @@ IN_PROGRESS -> COMPLETED
 | `COMPLETED` | None |
 | `CANCELLED` | None |
 
-Restoring a cancelled project is a separate administrative operation, not an ordinary status transition. Its target state and required conditions remain to be confirmed.
+Restoring a cancelled project is a separate administrative operation, not an ordinary status transition. The initial restore operation returns the project to `PLANNING` and is restricted to the explicit `PROJECT_RESTORE` permission.
 
 The lifecycle should remain flexible for normal project administration:
 
@@ -64,6 +64,8 @@ The project update operation should remain separate from status transitions and 
 - Location may be updated through the project update operation because it is a project-owned value object.
 - Budget changes should eventually be managed through the budget capability rather than silently changing project financial state.
 - Completed or cancelled projects are read-only for ordinary operational updates.
+- Project creation assigns the creator an active project membership in the same transaction.
+- Project list pagination is one-based at the API boundary and does not expose Spring pagination types.
 
 ## Project Phases
 

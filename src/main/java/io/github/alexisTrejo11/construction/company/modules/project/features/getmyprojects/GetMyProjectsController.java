@@ -7,9 +7,9 @@ import io.github.alexisTrejo11.construction.company.shared.Result;
 import io.github.alexisTrejo11.construction.company.shared.dto.PageRequest;
 import io.github.alexisTrejo11.construction.company.shared.dto.auth.CurrentUser;
 import io.github.alexisTrejo11.construction.company.shared.dto.auth.UserContext;
+import io.github.alexisTrejo11.construction.company.shared.dto.PageResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,7 +37,7 @@ public class GetMyProjectsController {
       );
     }
 
-    Result<Page<ProjectResponse>> result = handler.execute(
+    Result<PageResponse<ProjectResponse>> result = handler.execute(
         userContext,
         new GetMyProjectsQuery(userContext.userId(), request)
     );

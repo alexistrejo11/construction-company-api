@@ -19,9 +19,11 @@ public class DefaultProjectAuthorizationPolicy implements ProjectAuthorizationPo
         Permission.PROJECT_READ,
         Permission.PROJECT_UPDATE,
         Permission.PROJECT_CHANGE_STATUS,
+        Permission.PROJECT_RESTORE,
         Permission.PHASE_CREATE,
         Permission.PHASE_READ,
         Permission.PHASE_UPDATE,
+        Permission.PHASE_CHANGE_STATUS,
         Permission.PHASE_REORDER,
         Permission.MEMBER_MANAGE,
         Permission.MEMBER_READ

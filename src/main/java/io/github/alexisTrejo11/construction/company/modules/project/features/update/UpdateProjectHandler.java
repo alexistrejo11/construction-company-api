@@ -11,6 +11,7 @@ import io.github.alexisTrejo11.construction.company.shared.dto.auth.UserContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import io.github.alexisTrejo11.construction.company.modules.project.shared.domain.ProjectStatus;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +37,11 @@ public class UpdateProjectHandler {
   }
 
   private Result<ProjectResponse> apply(Project project, UpdateProjectCommand command) {
+    if (project.getStatus() == ProjectStatus.COMPLETED
+        || project.getStatus() == ProjectStatus.CANCELLED) {
+      return Result.business("Terminal projects cannot be updated");
+    }
+
     if (command.name() != null) {
       project.setName(command.name());
     }

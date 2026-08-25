@@ -29,6 +29,24 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
 
   @Query("""
         SELECT DISTINCT p FROM Project p
+        JOIN io.github.alexisTrejo11.construction.company.modules.project.members.shared.domain.ProjectMember m ON m.project = p
+        WHERE m.user.id = :userId
+          AND m.status = io.github.alexisTrejo11.construction.company.modules.project.members.shared.domain.ProjectMemberStatus.ACTIVE
+          AND (:search IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%'))
+               OR LOWER(p.code) LIKE LOWER(CONCAT('%', :search, '%')))
+          AND (:status IS NULL OR p.status = :status)
+          AND (:city IS NULL OR LOWER(p.location.city) LIKE LOWER(CONCAT('%', :city, '%')))
+    """)
+  Page<Project> findVisibleByUser(
+      @Param("userId") Long userId,
+      @Param("search") String search,
+      @Param("status") ProjectStatus status,
+      @Param("city") String city,
+      Pageable pageable
+  );
+
+  @Query("""
+        SELECT DISTINCT p FROM Project p
          JOIN io.github.alexisTrejo11.construction.company.modules.project.members.shared.domain.ProjectMember m ON m.project = p
          WHERE m.user.id = :userId
            AND m.status = io.github.alexisTrejo11.construction.company.modules.project.members.shared.domain.ProjectMemberStatus.ACTIVE

@@ -132,26 +132,25 @@ Goal: enforce global permissions and project scope without coupling domain code 
 - [x] Configure coarse route-level security rules.
 - [x] Return expected forbidden outcomes through the application result flow.
 - [x] Add authorization checks for User, Invitation, Project, Phase, and Member use cases.
-- [x] Verify that users cannot access another user's private resources.
-- [ ] Verify notification ownership when Phase 10 notification endpoints are implemented.
+- [ ] Verify that users cannot access another user's notifications or private resources.
 - [x] Add MockMvc authorization coverage for every currently implemented Phase 4 boundary.
 
 ## Phase 5: Project Core
 
 Goal: implement the first complete business flow.
 
-- [ ] Implement project create command, handler, controller, mapper, and response.
-- [ ] Implement project lookup by ID and business code.
-- [ ] Implement project listing and `my-projects` query.
-- [ ] Implement project general update with `PATCH`.
-- [ ] Protect the project business code from ordinary updates.
-- [ ] Implement explicit project status transitions.
-- [ ] Implement project cancellation through the status operation.
-- [ ] Implement explicit restoration for cancelled projects.
-- [ ] Implement project summaries.
-- [ ] Implement project validation for dates, budget estimate, and required fields.
-- [ ] Verify project authorization by permission and membership scope.
-- [ ] Add complete MockMvc integration coverage for every implemented Phase 5 endpoint under `docs/conventions/testing.md`.
+- [x] Implement project create command, handler, controller, mapper, and response.
+- [x] Implement project lookup by ID and business code.
+- [x] Implement project listing and `my-projects` query.
+- [x] Implement project general update with `PATCH`.
+- [x] Protect the project business code from ordinary updates.
+- [x] Implement explicit project status transitions.
+- [x] Implement project cancellation through the status operation.
+- [x] Implement explicit restoration for cancelled projects.
+- [x] Implement project summaries.
+- [x] Implement project validation for dates, budget estimate, and required fields.
+- [x] Verify project authorization by permission and membership scope.
+- [x] Add complete MockMvc integration coverage for every implemented Phase 5 endpoint under `docs/conventions/testing.md`.
 
 ## Phase 6: Project Members and Phases
 
@@ -159,24 +158,24 @@ Goal: implement project-scoped work management.
 
 ### Members
 
-- [ ] Implement add-member use case.
-- [ ] Enforce one membership per user and project.
-- [ ] Implement active/inactive membership status.
-- [ ] Preserve membership history when deactivating a member.
-- [ ] Remove project-specific roles from the target model.
-- [ ] Implement member listing and member lookup.
-- [ ] Verify membership authorization.
+- [x] Implement add-member use case.
+- [x] Enforce one membership per user and project.
+- [x] Implement active/inactive membership status.
+- [x] Preserve membership history when deactivating a member.
+- [x] Remove project-specific roles from the target model.
+- [x] Implement member listing and member lookup.
+- [x] Verify membership authorization.
 
 ### Phases
 
-- [ ] Add phase status to persistence if not already present.
-- [ ] Implement phase create, read, update, and list use cases.
-- [ ] Implement phase status transitions.
-- [ ] Implement phase reorder.
-- [ ] Validate phase dates, order, allocated budget, and project ownership.
-- [ ] Prevent ordinary changes to completed or cancelled phases.
-- [ ] Verify that project completion handles open phases according to the documented policy.
-- [ ] Add complete MockMvc integration coverage for every implemented Phase 6 endpoint under `docs/conventions/testing.md`.
+- [x] Add phase status to persistence if not already present.
+- [x] Implement phase create, read, update, and list use cases.
+- [x] Implement phase status transitions.
+- [x] Implement phase reorder.
+- [x] Validate phase dates, order, allocated budget, and project ownership.
+- [x] Prevent ordinary changes to completed or cancelled phases.
+- [x] Verify that project completion handles open phases according to the documented policy.
+- [x] Add complete MockMvc integration coverage for every implemented Phase 6 endpoint under `docs/conventions/testing.md`.
 
 ## Phase 7: Evidence and Attachments
 

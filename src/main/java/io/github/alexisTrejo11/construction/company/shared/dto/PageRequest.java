@@ -6,7 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 public record PageRequest(
-    @Min(value = 0, message = "The page must be above 0")
+    @Min(value = 1, message = "The page must be at least 1")
     int page,
     @Min(value = 1, message = "El size page must be at least 1")
     @Max(value = 100, message = "El size page must be under 100")
@@ -31,6 +31,6 @@ public record PageRequest(
   public Pageable toPageable() {
     Sort.Direction direction = Sort.Direction.fromOptionalString(sortDirection.toUpperCase())
         .orElse(Sort.Direction.ASC);
-    return org.springframework.data.domain.PageRequest.of(page, size, Sort.by(direction, sortBy));
+    return org.springframework.data.domain.PageRequest.of(page - 1, size, Sort.by(direction, sortBy));
   }
 }

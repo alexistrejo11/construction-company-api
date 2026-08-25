@@ -35,7 +35,14 @@ public class UpdateProjectStatusHandler {
 
     return repository.findById(projectId)
         .map(project -> {
-          project.updateStatus(command.status());
+          Result<Void> transition = project.updateStatus(command.status());
+          if (!transition.isSuccess()) {
+            return Result.<ProjectResponse>error(
+                transition.getErrorType(),
+                transition.getErrorMessage()
+            );
+          }
+
           return Result.success(mapper.toResponse(repository.save(project)));
         })
         .orElseGet(() -> Result.notFound("Project not found"));
