@@ -4,6 +4,8 @@ import io.github.alexisTrejo11.construction.company.modules.project.shared.dto.P
 import io.github.alexisTrejo11.construction.company.shared.AppErrorResolver;
 import io.github.alexisTrejo11.construction.company.shared.ResponseWrapper;
 import io.github.alexisTrejo11.construction.company.shared.Result;
+import io.github.alexisTrejo11.construction.company.shared.dto.auth.CurrentUser;
+import io.github.alexisTrejo11.construction.company.shared.dto.auth.UserContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,8 +20,10 @@ public class GetProjectByIdController {
   private final GetProjectByIdHandler handler;
 
   @GetMapping("/{projectId}")
-  public ResponseEntity<ResponseWrapper<?>> getProjectById(@PathVariable Long projectId) {
-    Result<ProjectResponse> projectResult = handler.execute(new GetProjectByIdQuery(projectId));
+  public ResponseEntity<ResponseWrapper<?>> getProjectById(
+      @CurrentUser UserContext user,
+      @PathVariable Long projectId) {
+    Result<ProjectResponse> projectResult = handler.execute(user, new GetProjectByIdQuery(projectId));
     if (!projectResult.isSuccess()) {
       return AppErrorResolver.handleResult(projectResult);
     }

@@ -1,6 +1,9 @@
 package io.github.alexisTrejo11.construction.company.modules.project.members.features.add;
 
 import io.github.alexisTrejo11.construction.company.shared.ResponseWrapper;
+import io.github.alexisTrejo11.construction.company.shared.AppErrorResolver;
+import io.github.alexisTrejo11.construction.company.shared.dto.auth.CurrentUser;
+import io.github.alexisTrejo11.construction.company.shared.dto.auth.UserContext;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,10 +22,16 @@ public class AddProjectMemberController {
 
   @PostMapping
   public ResponseEntity<ResponseWrapper<?>> addProjectMember(
+      @CurrentUser UserContext user,
       @PathVariable Long projectId,
       @RequestBody @Valid AddProjectMemberCommand request) {
+    var result = handler.execute(user, projectId, request);
+    if (!result.isSuccess()) {
+      return AppErrorResolver.handleResult(result);
+    }
+
     return ResponseEntity
         .status(HttpStatus.CREATED)
-        .body(ResponseWrapper.created(handler.execute(projectId, request), "ProjectMember"));
+        .body(ResponseWrapper.created(result.getData(), "ProjectMember"));
   }
 }

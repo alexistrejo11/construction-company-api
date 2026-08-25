@@ -1,73 +1,65 @@
 package io.github.alexisTrejo11.construction.company.config.security;
 
+import io.github.alexisTrejo11.construction.company.modules.user.shared.domain.UserStatus;
+import io.github.alexisTrejo11.construction.company.modules.user.shared.persistence.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
-import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.session.web.http.DefaultCookieSerializer;
 
 @Configuration
-@EnableWebSecurity
-@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-
-  private final JwtDecoder jwtDecoder;
-  private final JwtEncoder jwtEncoder;
+  private final UserRepository users;
   private final SecurityExceptionHandlers.CustomAccessDeniedHandler accessDeniedHandler;
-  private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-
-  @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    return http
-        .csrf(AbstractHttpConfigurer::disable)
-        .authorizeHttpRequests(auth -> auth
-            // Public endpoints
-            .requestMatchers(
-                "/v2/api/auth/**",
-                "/swagger-ui.html",
-                "/swagger-ui/**",
-                "/v3/api-docs/**",
-                "/api-docs/**")
-            .permitAll()
-
-            // Secured endpoints
-            .requestMatchers("/v2/api/admin/**").hasRole("ADMIN")
-            .requestMatchers("/v2/api/employees/**").authenticated()
-            .requestMatchers("/v2/api/manager/**").hasAnyRole("MANAGER", "ADMIN")
-            .requestMatchers("/v2/api/reimbursements/**").hasAnyRole("MANAGER", "FINANCIAL")
-            .requestMatchers("/v2/api/users/**").authenticated()
-            .anyRequest().authenticated())
-        .sessionManagement(session -> session
-            .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .exceptionHandling(exceptions -> exceptions
-            .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-            .accessDeniedHandler(accessDeniedHandler))
-        .oauth2ResourceServer(oauth2 -> oauth2
-            .jwt(jwt -> jwt
-                .decoder(jwtDecoder)
-                .jwtAuthenticationConverter(jwtAuthenticationConverter()))
-            .authenticationEntryPoint(jwtAuthenticationEntryPoint))
-        .build();
+  private final SecurityExceptionHandlers.CustomAuthenticationEntryPoint authenticationEntryPoint;
+  @Bean PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }
+  @Bean AuthenticationManager authenticationManager() {
+    var provider = new DaoAuthenticationProvider();
+    provider.setPasswordEncoder(passwordEncoder());
+    provider.setUserDetailsService(email -> users.findByEmail(email).filter(user -> user.getStatus() == UserStatus.ACTIVE)
+        .map(user -> new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPasswordHash(), user.getRoles().stream().map(role -> new SimpleGrantedAuthority("ROLE_" + role.name())).toList()))
+        .orElseThrow(() -> new UsernameNotFoundException("Invalid credentials")));
+    return provider::authenticate;
+  }
+  @Bean SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    var csrf = CookieCsrfTokenRepository.withHttpOnlyFalse();
+    csrf.setCookiePath("/");
+     return http.csrf(config -> config.csrfTokenRepository(csrf))
+         .authorizeHttpRequests(auth -> auth.requestMatchers("/v2/api/auth/csrf", "/v2/api/auth/login", "/v2/api/invitations/*/accept", "/swagger-ui/**", "/api-docs/**").permitAll().anyRequest().authenticated())
+         .securityContext(context -> context
+             .securityContextRepository(new HttpSessionSecurityContextRepository())
+             .requireExplicitSave(false))
+         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+         .exceptionHandling(exceptions -> exceptions
+             .accessDeniedHandler(accessDeniedHandler)
+             .authenticationEntryPoint(authenticationEntryPoint))
+         .build();
   }
 
   @Bean
-  public JwtAuthenticationConverter jwtAuthenticationConverter() {
-    JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
-    grantedAuthoritiesConverter.setAuthoritiesClaimName("roles");
-    grantedAuthoritiesConverter.setAuthorityPrefix("ROLE_");
-
-    JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
-    jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
-    return jwtAuthenticationConverter;
+  DefaultCookieSerializer cookieSerializer(
+      @Value("${app.security.session-cookie.secure:false}") boolean secureCookie
+  ) {
+    var serializer = new DefaultCookieSerializer();
+    serializer.setCookieName("SESSION");
+    serializer.setCookiePath("/");
+    serializer.setUseHttpOnlyCookie(true);
+    serializer.setSameSite("Lax");
+    serializer.setUseSecureCookie(secureCookie);
+    serializer.setCookieMaxAge(24 * 60 * 60);
+    return serializer;
   }
-
 }

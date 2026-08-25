@@ -2,7 +2,7 @@
 
 ## Status
 
-This document defines the initial authorization design. The complete role-to-permission matrix will be filled after the domain use cases are finalized.
+This document defines the initial authorization design. The initial matrix is intentionally restrictive while the operational use cases are still being implemented.
 
 ## Authorization Model
 
@@ -64,6 +64,24 @@ public final class RolePermissionCatalog {
 The catalog combines permissions from all roles assigned to a user. Permission sets should be immutable and should not be changed during request processing.
 
 An enum-backed `EnumMap<UserRole, EnumSet<Permission>>` or equivalent typed mapping is preferred initially. A database-backed permission model is not required until permissions must be managed dynamically by administrators.
+
+## Initial Matrix
+
+- `COMPANY_ADMIN` has every permission defined for currently implemented endpoints.
+- `PROJECT_MANAGER`, `SITE_ENGINEER`, `QUANTITY_SURVEYOR`, `FINANCE_OFFICER`, and `CONTRACTOR` have no permissions until their operational use cases and grants are explicitly approved.
+- `COMPANY_ADMIN` bypasses active project membership for every currently implemented project, phase, and member permission. The bypass is enumerated in the project authorization policy; it is not an implicit future grant.
+- When a non-administrator receives `PROJECT_READ`, project listings must contain only projects where that user has active membership.
+
+The initial permission set is:
+
+```text
+USER_INVITE, USER_READ, USER_UPDATE, USER_ROLE_MANAGE, USER_STATUS_MANAGE,
+PROJECT_CREATE, PROJECT_READ, PROJECT_UPDATE, PROJECT_CHANGE_STATUS,
+PHASE_CREATE, PHASE_READ, PHASE_UPDATE, PHASE_REORDER,
+MEMBER_MANAGE, MEMBER_READ
+```
+
+Notification endpoints are not implemented in the current application. Private-resource isolation is verified for `/auth/me`, `/users/me`, and administrative user profiles; notification ownership must be verified with the notification feature in Phase 10.
 
 ## Authorization Policy
 

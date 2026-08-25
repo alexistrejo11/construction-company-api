@@ -31,6 +31,7 @@ The ordered implementation checklist is maintained in `docs/implementation-plan.
 - Validation: `docs/conventions/validation.md`
 - Authentication and sessions: `docs/conventions/authentication.md`
 - Authorization: `docs/conventions/authorization.md`
+- Endpoint integration testing: `docs/conventions/testing.md`
 
 ## Infrastructure Direction
 

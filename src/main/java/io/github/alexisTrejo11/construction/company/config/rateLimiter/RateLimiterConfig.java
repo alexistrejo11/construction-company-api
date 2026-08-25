@@ -5,6 +5,7 @@ import io.github.bucket4j.Bucket;
 import io.github.bucket4j.Refill;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.time.Duration;
 
@@ -12,9 +13,12 @@ import java.time.Duration;
 public class RateLimiterConfig {
 
     @Bean
-    public Bucket bucket() {
-        long capacity = 20;
-        Refill refill = Refill.intervally(10, Duration.ofMinutes(1));
+    public Bucket bucket(
+        @Value("${app.rate-limit.capacity:20}") long capacity,
+        @Value("${app.rate-limit.refill-tokens:10}") long refillTokens,
+        @Value("${app.rate-limit.refill-minutes:1}") long refillMinutes
+    ) {
+        Refill refill = Refill.intervally(refillTokens, Duration.ofMinutes(refillMinutes));
         Bandwidth limit = Bandwidth.classic(capacity, refill);
         return Bucket.builder()
                 .addLimit(limit)

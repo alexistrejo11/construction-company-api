@@ -12,7 +12,7 @@
 
 - Compile production code: `./gradlew compileJava`.
 - Run locally: `./gradlew bootRun`; build the executable jar: `./gradlew bootJar`.
-- `./gradlew test` is disabled in `build.gradle`, and there are no Java test sources. The H2 `application-test.yml` is configuration only, so a successful test task is not test coverage.
+- Run `./gradlew test` for verification. Every implemented endpoint requires integration coverage under `docs/conventions/testing.md`; a successful task with no test sources is not endpoint coverage.
 - No lint, formatter, or static-analysis Gradle task is configured.
 
 ## Runtime And Persistence
@@ -25,6 +25,19 @@
 
 - Preserve expected business outcomes through `Result<T>` in handlers. Controllers must map failed results with `AppErrorResolver.handleResult(...)` and successful results with `ResponseWrapper`; do not throw ordinary conflict, validation, business-rule, or not-found failures.
 - API routes use `/v2/api/**`. Verify mappings and authorization together when adding or changing routes.
+
+## Code And Feature Conventions
+
+- Treat `docs/architecture.md`, `docs/api/endpoints.md`, and `docs/conventions/` as the source of truth. Do not invent routes, merge resource boundaries, or keep endpoints that are not in the documented contract.
+- Keep authentication/session endpoints in `modules/auth/`. Keep invitation, account-profile, and administrative user endpoints in `modules/user/`. A module must not become a catch-all for another capability's HTTP API.
+- One use case owns one feature package. Place its controller, command or query, handler, response, and feature-local mapper together under `modules/<module>/features/<use-case>/`.
+- Controllers only bind/validate HTTP input, call one handler, and translate `Result<T>` through the response boundary. Put orchestration, transactions, repository calls, mail dispatch, token handling, and status rules in handlers or focused shared capabilities.
+- Prefer records for commands, queries, request DTOs, and response DTOs. Do not put repositories, mail clients, or business orchestration in records.
+- Write readable Java: one field, statement, annotation, parameter, and record component per logical line; use normal indentation; group imports; avoid wildcard imports; use explicit names instead of compressed `var` chains; and use blank lines to separate logical blocks.
+- Import referenced project classes instead of writing fully qualified names in declarations or expressions. Use a fully qualified name only when a same-named type is already imported and cannot be resolved without a collision.
+- Use `var` only when the initializer is a static factory or builder call whose declaring type makes the inferred type obvious, for example `var token = InvitationToken.of(rawToken);`. Do not use `var` for constructors, repository calls, chained expressions, or values whose type is not immediately visible.
+- Do not compress methods, declarations, or multiple operations onto one line. Code should be easy to scan and edit without reformatting.
+- Keep helpers focused and named after the rule or technical concern they implement. Do not introduce generic module-wide service containers.
 
 ## Build Caveat
 

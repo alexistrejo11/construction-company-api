@@ -3,6 +3,8 @@ package io.github.alexisTrejo11.construction.company.modules.project.features.cr
 import io.github.alexisTrejo11.construction.company.shared.AppErrorResolver;
 import io.github.alexisTrejo11.construction.company.shared.ResponseWrapper;
 import io.github.alexisTrejo11.construction.company.shared.Result;
+import io.github.alexisTrejo11.construction.company.shared.dto.auth.CurrentUser;
+import io.github.alexisTrejo11.construction.company.shared.dto.auth.UserContext;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,8 +21,10 @@ public class CreateProjectController {
   private final CreateProjectHandler handler;
 
   @PostMapping
-  public ResponseEntity<ResponseWrapper<?>> handle(@RequestBody @Valid CreateProjectCommand request) {
-    Result<CreateProjectResponse> projectResult = handler.execute(request);
+  public ResponseEntity<ResponseWrapper<?>> handle(
+      @CurrentUser UserContext user,
+      @RequestBody @Valid CreateProjectCommand request) {
+    Result<CreateProjectResponse> projectResult = handler.execute(user, request);
     if (!projectResult.isSuccess()) {
       return AppErrorResolver.handleResult(projectResult);
     }

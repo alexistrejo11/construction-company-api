@@ -29,8 +29,9 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
 
   @Query("""
         SELECT DISTINCT p FROM Project p
-        JOIN io.github.alexisTrejo11.construction.company.modules.project.members.shared.domain.ProjectMember m ON m.project = p
-        WHERE m.user.id = :userId
+         JOIN io.github.alexisTrejo11.construction.company.modules.project.members.shared.domain.ProjectMember m ON m.project = p
+         WHERE m.user.id = :userId
+           AND m.status = io.github.alexisTrejo11.construction.company.modules.project.members.shared.domain.ProjectMemberStatus.ACTIVE
     """)
   Page<Project> findByUserIdWithMembers(@Param("userId") Long userId, Pageable pageable);
 

@@ -4,6 +4,8 @@ import io.github.alexisTrejo11.construction.company.modules.project.shared.dto.P
 import io.github.alexisTrejo11.construction.company.shared.AppErrorResolver;
 import io.github.alexisTrejo11.construction.company.shared.ResponseWrapper;
 import io.github.alexisTrejo11.construction.company.shared.Result;
+import io.github.alexisTrejo11.construction.company.shared.dto.auth.CurrentUser;
+import io.github.alexisTrejo11.construction.company.shared.dto.auth.UserContext;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,9 +23,10 @@ public class UpdateProjectStatusController {
 
   @PatchMapping("/{projectId}/status")
   public ResponseEntity<ResponseWrapper<?>> updateProjectStatus(
+      @CurrentUser UserContext user,
       @PathVariable Long projectId,
       @RequestBody @Valid UpdateProjectStatusCommand request) {
-    Result<ProjectResponse> projectResult = handler.execute(projectId, request);
+    Result<ProjectResponse> projectResult = handler.execute(user, projectId, request);
     if (!projectResult.isSuccess()) {
       return AppErrorResolver.handleResult(projectResult);
     }

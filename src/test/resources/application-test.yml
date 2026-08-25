@@ -44,3 +44,9 @@ jwt:
 file:
   upload:
     dir: ${java.io.tmpdir}/company-expenses-test-uploads
+
+app:
+  rate-limit:
+    capacity: 1000
+    refill-tokens: 1000
+    refill-minutes: 1

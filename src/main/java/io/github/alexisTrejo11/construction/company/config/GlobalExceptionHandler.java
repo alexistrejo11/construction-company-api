@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -23,6 +24,10 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(EntityNotFoundException.class)
   ResponseEntity<ResponseWrapper<?>> notFound(EntityNotFoundException exception) {
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseWrapper.failure("Resource was not found", Result.ErrorType.NOT_FOUND, "RESOURCE_NOT_FOUND", null));
+  }
+  @ExceptionHandler(HttpMessageNotReadableException.class)
+  ResponseEntity<ResponseWrapper<?>> unreadableRequest(HttpMessageNotReadableException exception) {
+    return ResponseEntity.badRequest().body(ResponseWrapper.failure("Request validation failed", Result.ErrorType.VALIDATION, "MALFORMED_REQUEST", null));
   }
   @ExceptionHandler(Exception.class)
   ResponseEntity<ResponseWrapper<?>> unexpected(Exception exception) {

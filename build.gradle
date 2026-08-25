@@ -38,6 +38,7 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.junit.jupiter:junit-jupiter'
 	testImplementation 'org.mockito:mockito-junit-jupiter'
+	testImplementation 'org.springframework.security:spring-security-test'
 
 	// Database
 	testImplementation 'com.h2database:h2'
@@ -54,9 +55,7 @@ dependencies {
 
 	// auth
 	implementation 'org.springframework.boot:spring-boot-starter-security'
-	implementation 'org.springframework.security:spring-security-oauth2-jose'
-	implementation 'org.springframework.security:spring-security-oauth2-resource-server'
-	implementation 'com.nimbusds:nimbus-jose-jwt:9.37.3'
+	implementation 'org.springframework.session:spring-session-jdbc'
 	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
 	// Mail service
@@ -110,9 +109,4 @@ bootRun {
 			}
 		}
 	}
-}
-
-
-test {
-	enabled = false
 }

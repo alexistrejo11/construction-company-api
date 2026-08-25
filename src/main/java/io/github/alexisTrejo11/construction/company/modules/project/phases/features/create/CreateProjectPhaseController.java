@@ -1,6 +1,10 @@
 package io.github.alexisTrejo11.construction.company.modules.project.phases.features.create;
 
 import io.github.alexisTrejo11.construction.company.shared.ResponseWrapper;
+import io.github.alexisTrejo11.construction.company.shared.AppErrorResolver;
+import io.github.alexisTrejo11.construction.company.shared.Result;
+import io.github.alexisTrejo11.construction.company.shared.dto.auth.CurrentUser;
+import io.github.alexisTrejo11.construction.company.shared.dto.auth.UserContext;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,10 +23,16 @@ public class CreateProjectPhaseController {
 
   @PostMapping
   public ResponseEntity<ResponseWrapper<?>> addProjectPhase(
+      @CurrentUser UserContext user,
       @PathVariable Long projectId,
       @RequestBody @Valid CreateProjectPhaseCommand request) {
+    Result<?> result = handler.execute(user, projectId, request);
+    if (!result.isSuccess()) {
+      return AppErrorResolver.handleResult(result);
+    }
+
     return ResponseEntity
         .status(HttpStatus.CREATED)
-        .body(ResponseWrapper.created(handler.execute(projectId, request), "ProjectPhase"));
+        .body(ResponseWrapper.created(result.getData(), "ProjectPhase"));
   }
 }
