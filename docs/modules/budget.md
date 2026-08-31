@@ -61,9 +61,11 @@ Recording an expense should not be blocked solely because it exceeds the planned
 
 Budget items may similarly derive planned totals from quantity and unit price. Persisting those totals is acceptable only as a controlled optimization.
 
-## Use Cases
+## Implemented API Scope
 
-- To be listed and confirmed.
+The initial implementation provides one budget per project, lifecycle transitions, budget item CRUD, expense CRUD, expense status transitions, and derived summaries. Expense creation requires a budget item and uses the budget currency; an expense in another currency is rejected. Over-budget expenses are recorded and surfaced in summaries rather than silently blocked.
+
+Budget item and expense list endpoints use one-based pagination with a maximum page size of 100. Budget items support `search` and `category`; expenses support `search`, `status`, and `currency`. Materialized totals remain a deferred refinement.
 
 ## Access Rules
 

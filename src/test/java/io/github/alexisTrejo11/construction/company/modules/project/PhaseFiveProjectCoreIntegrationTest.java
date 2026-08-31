@@ -11,6 +11,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.github.alexisTrejo11.construction.company.modules.project.members.shared.persistence.ProjectMemberRepository;
+import io.github.alexisTrejo11.construction.company.modules.evidence.shared.persistence.AttachmentRepository;
+import io.github.alexisTrejo11.construction.company.modules.evidence.shared.persistence.EvidenceRepository;
+import io.github.alexisTrejo11.construction.company.modules.expense.shared.persistence.ExpenseRepository;
 import io.github.alexisTrejo11.construction.company.modules.project.shared.domain.Project;
 import io.github.alexisTrejo11.construction.company.modules.project.shared.domain.ProjectStatus;
 import io.github.alexisTrejo11.construction.company.modules.project.shared.persistence.ProjectRepository;
@@ -50,12 +53,24 @@ class PhaseFiveProjectCoreIntegrationTest {
     private ProjectMemberRepository projectMemberRepository;
 
     @Autowired
+    private AttachmentRepository attachmentRepository;
+
+    @Autowired
+    private EvidenceRepository evidenceRepository;
+
+    @Autowired
+    private ExpenseRepository expenseRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     private User admin;
 
     @BeforeEach
     void setUp() {
+        attachmentRepository.deleteAll();
+        evidenceRepository.deleteAll();
+        expenseRepository.deleteAll();
         invitationRepository.deleteAll();
         projectMemberRepository.deleteAll();
         projectRepository.deleteAll();

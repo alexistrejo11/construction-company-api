@@ -26,7 +26,20 @@ public class DefaultProjectAuthorizationPolicy implements ProjectAuthorizationPo
         Permission.PHASE_CHANGE_STATUS,
         Permission.PHASE_REORDER,
         Permission.MEMBER_MANAGE,
-        Permission.MEMBER_READ
+        Permission.MEMBER_READ,
+        Permission.EVIDENCE_CREATE,
+        Permission.EVIDENCE_READ,
+        Permission.EVIDENCE_UPDATE,
+        Permission.EVIDENCE_DELETE,
+        Permission.ATTACHMENT_CREATE,
+        Permission.ATTACHMENT_READ,
+        Permission.ATTACHMENT_DELETE
+        ,Permission.BUDGET_CREATE, Permission.BUDGET_READ, Permission.BUDGET_UPDATE,
+        Permission.BUDGET_APPROVE, Permission.BUDGET_REVISE, Permission.BUDGET_CLOSE,
+        Permission.BUDGET_ITEM_CREATE, Permission.BUDGET_ITEM_READ, Permission.BUDGET_ITEM_UPDATE,
+        Permission.BUDGET_ITEM_DELETE, Permission.EXPENSE_CREATE, Permission.EXPENSE_READ,
+        Permission.EXPENSE_UPDATE, Permission.EXPENSE_SUBMIT, Permission.EXPENSE_APPROVE,
+        Permission.EXPENSE_REJECT, Permission.EXPENSE_CORRECT
     );
 
     private final ProjectMemberRepository projectMemberRepository;

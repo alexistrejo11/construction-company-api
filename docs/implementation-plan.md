@@ -181,16 +181,26 @@ Goal: implement project-scoped work management.
 
 Goal: replace resource-specific attachment models with reusable evidence support.
 
-- [ ] Define the persistence association between `Evidence` and supported resources.
-- [ ] Define the `Attachment` storage metadata and storage key contract.
-- [ ] Implement evidence create, read, update, and delete operations.
-- [ ] Implement attachment upload and metadata listing.
-- [ ] Implement safe file-name, MIME type, and file-size validation.
-- [ ] Keep file storage behind an application/infrastructure boundary.
-- [ ] Migrate or deprecate `ExpenseAttachmentEntity`.
-- [ ] Remove or replace legacy `Expense.invoiceUrl`.
-- [ ] Verify evidence does not modify the lifecycle of its target resource.
-- [ ] Add complete MockMvc integration coverage for every implemented Phase 7 endpoint under `docs/conventions/testing.md`.
+- [x] Define the persistence association between `Evidence` and supported resources.
+- [x] Define the `Attachment` storage metadata and storage key contract.
+- [x] Implement evidence create, read, update, and delete operations.
+- [x] Implement attachment upload and metadata listing.
+- [x] Implement safe file-name, MIME type, and file-size validation.
+- [x] Keep file storage behind an application/infrastructure boundary.
+- [x] Confirm no legacy `ExpenseAttachmentEntity` exists to migrate.
+- [x] Confirm no legacy `Expense.invoiceUrl` exists to replace.
+- [x] Verify evidence does not modify the lifecycle of its target resource.
+- [x] Add complete MockMvc integration coverage for every implemented Phase 7 endpoint under `docs/conventions/testing.md`.
+
+### Phase 7.5: Expense Evidence Integration
+
+Goal: attach shared evidence to Phase 8 expenses without weakening referential integrity.
+
+- [x] Add the explicit expense association through a minimal project-owned expense target foundation.
+- [x] Implement the documented expense evidence create and list endpoints.
+- [x] Add complete MockMvc integration coverage for expense evidence endpoints.
+
+The minimal expense target foundation is not the Phase 8 expense workflow. Budget ownership, budget items, expense lifecycle transitions, approvals, and financial summaries remain in Phase 8.
 
 ## Phase 8: Budget and Expenses
 
@@ -198,25 +208,27 @@ Goal: implement financial planning and expense control.
 
 ### Budget
 
-- [ ] Implement one budget per project.
-- [ ] Implement budget lifecycle: `DRAFT`, `APPROVED`, `CLOSED`.
-- [ ] Implement budget create, read, update, approve, revise, close, and summary use cases.
-- [ ] Keep budget revision in place; defer formal versioning.
-- [ ] Implement budget item create, read, update, and removal rules.
-- [ ] Derive planned item totals from quantity and unit price.
+- [x] Implement one budget per project.
+- [x] Implement budget lifecycle: `DRAFT`, `APPROVED`, `CLOSED`.
+- [x] Implement budget create, read, update, approve, revise, close, and summary use cases.
+- [x] Keep budget revision in place; defer formal versioning.
+- [x] Implement budget item create, read, update, and removal rules.
+- [x] Derive planned item totals from quantity and unit price.
 
 ### Expenses
 
-- [ ] Implement expense lifecycle: `DRAFT`, `PENDING_APPROVAL`, `APPROVED`, and `REJECTED`.
-- [ ] Implement expense create, read, and draft update.
-- [ ] Implement submit, approve, reject, and return-to-draft operations.
-- [ ] Count only approved expenses as executed cost.
-- [ ] Derive balance and variance from approved expenses.
-- [ ] Decide whether persisted executed totals are needed for performance.
+- [x] Implement expense lifecycle: `DRAFT`, `PENDING_APPROVAL`, `APPROVED`, and `REJECTED`.
+- [x] Implement expense create, read, and draft update.
+- [x] Implement submit, approve, reject, and return-to-draft operations.
+- [x] Count only approved expenses as executed cost.
+- [x] Derive balance and variance from approved expenses.
+- [x] Decide whether persisted executed totals are needed for performance.
 - [ ] If totals are materialized, add transactional updates and reconciliation.
-- [ ] Add evidence support for receipts and invoices.
-- [ ] Verify over-budget behavior without silently blocking normal expense recording.
-- [ ] Add complete MockMvc integration coverage for every implemented Phase 8 endpoint under `docs/conventions/testing.md`.
+- [x] Add evidence support for receipts and invoices.
+- [x] Verify over-budget behavior without silently blocking normal expense recording.
+- [x] Add complete MockMvc integration coverage for every implemented Phase 8 endpoint under `docs/conventions/testing.md`.
+
+Phase 8 currently provides the complete budget and expense workflow over the minimal expense target introduced in Phase 7.5. Materialized-total optimization remains a deferred refinement.
 
 ## Phase 9: Inventory
 

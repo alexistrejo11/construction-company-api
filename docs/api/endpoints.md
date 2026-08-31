@@ -98,6 +98,8 @@ There is no project-role update endpoint. Project membership provides scope; glo
 
 Evidence is mutable and does not directly change the lifecycle of its target resource.
 
+Phase 7 supports evidence for project phases. Phase 7.5 adds the explicit expense association and expense evidence endpoints; full budget-linked expense workflows remain Phase 8.
+
 ## Budgets
 
 | Method | Path | Permission | Description | Success |
@@ -118,7 +120,7 @@ The initial model uses one revisable budget per project. Formal budget versionin
 | Method | Path | Permission | Description | Success |
 |---|---|---|---|---|
 | POST | `/budgets/{budgetId}/items` | `BUDGET_ITEM_CREATE` | Create a budget item. | `201 Created` |
-| GET | `/budgets/{budgetId}/items` | `BUDGET_ITEM_READ` | List budget items with filtering and pagination. | `200 OK` |
+| GET | `/budgets/{budgetId}/items` | `BUDGET_ITEM_READ` | List budget items with optional `search`, `category`, `page`, and `size` filters. | `200 OK` |
 | GET | `/budgets/{budgetId}/items/{itemId}` | `BUDGET_ITEM_READ` | Get a budget item. | `200 OK` |
 | PATCH | `/budgets/{budgetId}/items/{itemId}` | `BUDGET_ITEM_UPDATE` | Update a budget item when allowed. | `200 OK` |
 | DELETE | `/budgets/{budgetId}/items/{itemId}` | `BUDGET_ITEM_DELETE` | Remove an unused budget item when allowed. | `204 No Content` |
@@ -128,7 +130,7 @@ The initial model uses one revisable budget per project. Formal budget versionin
 | Method | Path | Permission | Description | Success |
 |---|---|---|---|---|
 | POST | `/budgets/{budgetId}/expenses` | `EXPENSE_CREATE` | Create a draft expense against a budget item. | `201 Created` |
-| GET | `/budgets/{budgetId}/expenses` | `EXPENSE_READ` | List budget expenses with filtering and pagination. | `200 OK` |
+| GET | `/budgets/{budgetId}/expenses` | `EXPENSE_READ` | List budget expenses with optional `search`, `status`, `currency`, `page`, and `size` filters. | `200 OK` |
 | GET | `/expenses/{expenseId}` | `EXPENSE_READ` | Get an expense. | `200 OK` |
 | PATCH | `/expenses/{expenseId}` | `EXPENSE_UPDATE` | Update an expense while it is draft. | `200 OK` |
 | POST | `/expenses/{expenseId}/submit` | `EXPENSE_SUBMIT` | Submit a draft expense for review. | `200 OK` |

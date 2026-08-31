@@ -13,6 +13,8 @@ Manage costs incurred by construction projects and their supporting evidence.
 
 An expense belongs to a budget and is normally associated with a budget item. The budget and item provide the planning context; the expense represents an actual incurred cost.
 
+Phase 7.5 introduces only the minimal persisted expense target needed for referentially safe evidence association. Its project ownership, amount, currency, and initial draft state are placeholders for the complete Phase 8 budget-linked workflow.
+
 ## Initial Lifecycle
 
 ```text
@@ -32,9 +34,9 @@ Only approved expenses contribute to executed budget amounts. Rejected expenses 
 
 Expense-specific financial metadata remains on `Expense`; files and supporting descriptions should use the shared `Evidence` and `Attachment` concepts.
 
-## Use Cases
+## Implemented API Scope
 
-- To be listed and confirmed.
+Expenses are created as drafts against a budget item, must use the budget currency, and follow the documented submit, approve, reject, and return-to-draft transitions. Only approved expenses contribute to derived executed totals. Evidence and attachment support is provided by the shared evidence capability.
 
 ## Access Rules
 

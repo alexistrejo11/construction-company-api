@@ -41,6 +41,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import jakarta.servlet.http.Cookie;
+import io.github.alexisTrejo11.construction.company.modules.evidence.shared.persistence.AttachmentRepository;
+import io.github.alexisTrejo11.construction.company.modules.evidence.shared.persistence.EvidenceRepository;
+import io.github.alexisTrejo11.construction.company.modules.expense.shared.persistence.ExpenseRepository;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -62,6 +65,15 @@ class PhaseThreeWorkflowIntegrationTest {
     private ProjectMemberRepository projectMemberRepository;
 
     @Autowired
+    private AttachmentRepository attachmentRepository;
+
+    @Autowired
+    private EvidenceRepository evidenceRepository;
+
+    @Autowired
+    private ExpenseRepository expenseRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @MockitoBean
@@ -71,6 +83,9 @@ class PhaseThreeWorkflowIntegrationTest {
 
     @BeforeEach
     void setUp() {
+        attachmentRepository.deleteAll();
+        evidenceRepository.deleteAll();
+        expenseRepository.deleteAll();
         invitationRepository.deleteAll();
         projectMemberRepository.deleteAll();
         projectRepository.deleteAll();

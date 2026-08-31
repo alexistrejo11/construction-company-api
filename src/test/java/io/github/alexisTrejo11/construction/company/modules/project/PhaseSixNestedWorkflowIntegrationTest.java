@@ -10,6 +10,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.github.alexisTrejo11.construction.company.modules.project.members.shared.persistence.ProjectMemberRepository;
+import io.github.alexisTrejo11.construction.company.modules.evidence.shared.persistence.AttachmentRepository;
+import io.github.alexisTrejo11.construction.company.modules.evidence.shared.persistence.EvidenceRepository;
+import io.github.alexisTrejo11.construction.company.modules.expense.shared.persistence.ExpenseRepository;
 import io.github.alexisTrejo11.construction.company.modules.project.phases.shared.persistence.ProjectPhaseRepository;
 import io.github.alexisTrejo11.construction.company.modules.project.shared.persistence.ProjectRepository;
 import io.github.alexisTrejo11.construction.company.modules.user.shared.domain.User;
@@ -48,6 +51,15 @@ class PhaseSixNestedWorkflowIntegrationTest {
     private ProjectMemberRepository memberRepository;
 
     @Autowired
+    private AttachmentRepository attachmentRepository;
+
+    @Autowired
+    private EvidenceRepository evidenceRepository;
+
+    @Autowired
+    private ExpenseRepository expenseRepository;
+
+    @Autowired
     private ProjectPhaseRepository phaseRepository;
 
     @Autowired
@@ -57,6 +69,9 @@ class PhaseSixNestedWorkflowIntegrationTest {
 
     @BeforeEach
     void setUp() {
+        attachmentRepository.deleteAll();
+        evidenceRepository.deleteAll();
+        expenseRepository.deleteAll();
         invitationRepository.deleteAll();
         phaseRepository.deleteAll();
         memberRepository.deleteAll();

@@ -69,7 +69,7 @@ For each entity, the following sections will be completed before implementation 
 - Purpose: Reusable evidence record that provides optional supporting context for phase progress or another business operation.
 - Identity: A persistent evidence identity.
 - Lifecycle: Created and managed as a supporting record; detailed lifecycle is pending.
-- Relationships: May be associated with a phase, expense, project, or another supported resource and may contain attachments.
+- Relationships: Belongs to one supported target (`ProjectPhase` or `Expense`) and one author, and may contain attachments. Phase 7.5 adds the expense target; full expense behavior remains in Phase 8.
 - Invariants: Titles, descriptions, timestamps, and associations must be valid when provided.
 - Use cases: Add, list, view, and remove evidence.
 - Access rules: Inherits the scope of its associated resource.
@@ -129,7 +129,7 @@ For each entity, the following sections will be completed before implementation 
 - Purpose: Represents an actual cost incurred against a budget plan.
 - Identity: A persistent expense identity.
 - Lifecycle: `DRAFT`, `PENDING_APPROVAL`, `APPROVED`, or `REJECTED`.
-- Relationships: Belongs to one budget and one budget item, and may contain attachments.
+- Relationships: Belongs to one project and, for Phase 8 workflow expenses, one budget and one budget item; it may contain evidence. The project reference is retained for scoped access and compatibility with the Phase 7.5 target foundation.
 - Invariants: Amount and currency are valid; only approved expenses count as executed cost.
 - Use cases: Create, update while draft, submit, approve, reject, and inspect.
 - Access rules: Derived from global permissions, project scope, and approval policy.
