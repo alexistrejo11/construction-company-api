@@ -14,4 +14,10 @@ public class MailProperties {
     private int port;
     private String username;
     private String password;
+    private String protocol = "smtp";
+    private boolean auth;
+    private boolean starttlsEnable;
+    private int connectionTimeout = 5000;
+    private int timeout = 5000;
+    private int writeTimeout = 5000;
 }

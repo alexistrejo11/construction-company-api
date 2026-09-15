@@ -19,12 +19,22 @@ Project N ── N Contractor
 InventoryItem 1 ── N InventoryMovementLine
 InventoryLocation 1 ── N InventoryMovement (as source or target)
 InventoryMovement 1 ── N InventoryMovementLine
-Notification ── references a user and a relevant event
+InventoryMovementLine N ── 1 InventoryItem
+InventoryLocation 0..1 ── 1 Project (only for PROJECT_SITE)
+User 1 ── N Notification
+Notification ── optionally references a resource type and identifier
 ```
 
 Approval is excluded from the current relationship map. If introduced later, its target relationship must be designed explicitly rather than assumed to be polymorphic.
 
-These relationships are candidates and must be confirmed against business rules before being treated as the domain model.
+The inventory relationships above are confirmed for Phase 9. Movement lines
+are owned by their movement and are replaced only while the movement is a
+draft. Inventory locations may reference projects for data integrity, but
+inventory authorization remains global rather than project-membership scoped.
+
+The notification relationship is confirmed for Phase 10: a notification is
+owned by one recipient user, and its optional resource reference is stored as
+application metadata rather than a polymorphic foreign key.
 
 ## Questions Per Relationship
 

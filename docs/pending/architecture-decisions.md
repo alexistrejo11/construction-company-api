@@ -28,6 +28,7 @@ This file tracks unresolved design questions. Its contents are not architectural
 
 ## Nested-Area Persistence Ownership
 
-Project phases and project members are independently managed, but it is not yet decided whether they are internal parts of the `Project` aggregate with cascade behavior or subordinate resources with their own repositories and update lifecycle.
-
-The final decision must preserve the rule that neither resource can exist without a valid project.
+Resolved by Phase 1: project phases and project members are subordinate
+resources with their own repositories and update lifecycle. Foreign keys
+preserve the rule that neither resource can exist without a valid project;
+project cascade and orphan removal are not used.

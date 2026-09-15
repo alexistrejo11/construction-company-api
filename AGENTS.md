@@ -41,4 +41,4 @@
 
 ## Build Caveat
 
-- The checked-in `Dockerfile` is not functional for this repository: it uses Gradle/JDK 17 and copies a nonexistent `docker/` directory, while the Gradle build requires Java 26. Fix or verify it before using the image flow.
+- The checked-in `Dockerfile` uses Java 26 and the repository's actual layout. The Docker image build still requires a running Docker daemon and must be verified before relying on the image flow.

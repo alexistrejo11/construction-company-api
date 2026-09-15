@@ -82,7 +82,7 @@ Goal: establish stable transport contracts before implementing feature slices.
 - [x] Align `AppErrorResolver` with the final result-to-HTTP mapping.
 - [x] Align `GlobalExceptionHandler` and security error handlers with the same envelope.
 - [x] Define the pagination response and request contracts without exposing Spring `Page` or `Pageable` at the API boundary.
-- [ ] Add focused serialization or controller tests once the test task is enabled.
+- [x] Add focused serialization or controller tests once the test task is enabled.
 
 ### Phase 2 Record (2026-08-19)
 
@@ -132,7 +132,7 @@ Goal: enforce global permissions and project scope without coupling domain code 
 - [x] Configure coarse route-level security rules.
 - [x] Return expected forbidden outcomes through the application result flow.
 - [x] Add authorization checks for User, Invitation, Project, Phase, and Member use cases.
-- [ ] Verify that users cannot access another user's notifications or private resources.
+- [x] Verify that users cannot access another user's notifications or private resources.
 - [x] Add MockMvc authorization coverage for every currently implemented Phase 4 boundary.
 
 ## Phase 5: Project Core
@@ -234,42 +234,112 @@ Phase 8 currently provides the complete budget and expense workflow over the min
 
 Goal: implement generic inventory for materials, tools, equipment, and supplies.
 
-- [ ] Implement `InventoryItem` and its categories.
-- [ ] Implement quantity and serialized tracking modes.
-- [ ] Implement `InventoryLocation` for warehouses and project sites.
-- [ ] Implement location CRUD and active/inactive behavior.
-- [ ] Implement draft inventory movements.
-- [ ] Implement movement lines and positive quantity validation.
-- [ ] Implement posting movements and applying stock effects.
-- [ ] Prevent edits to posted movements.
-- [ ] Implement reversing or adjustment movements.
-- [ ] Derive balances from movement history initially.
-- [ ] Add a materialized balance only if performance requires it.
-- [ ] Add low-stock threshold policy if the inventory item model supports it.
-- [ ] Publish low-stock events only when the threshold-crossing policy is defined.
-- [ ] Add complete MockMvc integration coverage for every implemented Phase 9 endpoint under `docs/conventions/testing.md`.
+### Phase 9 Decisions (2026-09-02)
+
+- Inventory authorization is global-only; project membership is not required.
+- `QUANTITY` and `SERIALIZED` are the initial tracking modes.
+- Serialized movement lines have quantity `1` and exactly one serial number.
+- `RECEIPT` targets a location, `ISSUE` and `RETURN` source a location,
+  `TRANSFER` has different source and target locations, and `ADJUSTMENT` uses
+  one location with explicit `INCREASE` or `DECREASE` direction.
+- Posting rejects insufficient stock and never permits negative balances.
+- Posted movements are immutable. A posted movement may have one independently
+  posted reversing movement; reversals are not recursively reversible.
+- Balances are derived from posted movement history. Materialized balances are
+  deferred until measured performance requires them.
+- Low-stock events and movement evidence/attachments are deferred. The current
+  evidence schema does not support inventory movement targets.
+
+- [x] Implement `InventoryItem` and its categories.
+- [x] Implement quantity and serialized tracking modes.
+- [x] Implement `InventoryLocation` for warehouses and project sites.
+- [x] Implement location CRUD and active/inactive behavior.
+- [x] Implement draft inventory movements.
+- [x] Implement movement lines and positive quantity validation.
+- [x] Implement posting movements and applying stock effects.
+- [x] Prevent edits to posted movements.
+- [x] Implement reversing or adjustment movements.
+- [x] Derive balances from movement history initially.
+- [x] Defer materialized balances until measured performance requires them.
+- [x] Defer low-stock threshold policy until the item policy supports it.
+- [x] Defer low-stock events until threshold-crossing and notification policies are defined.
+- [x] Add complete MockMvc integration coverage for every implemented Phase 9 endpoint under `docs/conventions/testing.md`.
+
+### Phase 9 Completion Record (2026-09-02)
+
+- Inventory domain, persistence, authorization, API slices, and the V6
+  production migration are implemented.
+- All documented inventory item, location, balance, and movement endpoints
+  have MockMvc integration coverage.
+- `./gradlew compileJava`, `./gradlew test`, and `./gradlew bootJar` pass.
+- Low-stock notifications, materialized balances, and movement evidence remain
+  intentional follow-up work, not part of the completed Phase 9 baseline.
 
 ## Phase 10: Notifications
 
 Goal: deliver explicit and event-driven user notifications without coupling business operations to external mail or SMS providers.
 
-- [ ] Implement in-app notification persistence.
-- [ ] Implement current-user notification listing and read operations.
-- [ ] Remove the public generic notification creation endpoint.
-- [ ] Define immutable application event payloads.
-- [ ] Configure `ApplicationEventPublisher` for business events.
-- [ ] Handle transactional events with `@TransactionalEventListener(AFTER_COMMIT)`.
-- [ ] Dispatch email asynchronously through Spring Mail.
-- [ ] Keep SMTP credentials in environment configuration.
-- [ ] Add channel delivery status only if retries or diagnostics require it.
-- [ ] Add SMS only after selecting a provider and defining its failure policy.
-- [ ] Add notification deduplication for repeated conditions such as low stock.
-- [ ] Consider a transactional outbox if notification loss becomes unacceptable.
-- [ ] Add complete MockMvc integration coverage for every implemented Phase 10 endpoint under `docs/conventions/testing.md`.
+### Phase 10 Decisions (2026-09-02)
+
+- The initial notification producer is invitation creation only.
+- The canonical record belongs to one persisted user and contains type, title,
+  message, optional `resourceType`/`resourceId`, and nullable `readAt`.
+- Notification routes are authenticated-only and ownership-scoped; no
+  notification permission is added.
+- Notification listing supports optional `read`, one-based `page`, `size`, and
+  `sort`, with newest-first ordering by default.
+- Mark-read is idempotent. Mark-all returns the count newly marked read.
+- Inaccessible notification identifiers return not found rather than disclose
+  another user's resource.
+- Notification persistence occurs after commit; external email delivery is
+  asynchronous and best effort. Delivery failures do not roll back source work.
+- Low-stock, expense, project-status, and other producers are deferred until
+  recipient policies are defined. SMS, delivery status/retries, deduplication,
+  and an outbox are also deferred.
+- The existing evidence model does not participate in notifications.
+
+- [x] Implement in-app notification persistence.
+- [x] Implement current-user notification listing and read operations.
+- [x] Confirm there is no public generic notification creation endpoint.
+- [x] Define immutable invitation notification event payloads.
+- [x] Configure `ApplicationEventPublisher` for invitation events.
+- [x] Handle invitation events with `@TransactionalEventListener(AFTER_COMMIT)`.
+- [x] Dispatch invitation email asynchronously through Spring Mail.
+- [x] Keep SMTP credentials in environment configuration.
+- [x] Defer channel delivery status until retries or diagnostics require it.
+- [x] Defer SMS until a provider and failure policy are selected.
+- [x] Defer notification deduplication until repeated-event producers are implemented.
+- [x] Defer a transactional outbox until notification loss becomes unacceptable.
+- [x] Add complete MockMvc integration coverage for every implemented Phase 10 endpoint under `docs/conventions/testing.md`.
+
+### Phase 10 Completion Record (2026-09-02)
+
+- Notification persistence, ownership-scoped API operations, invitation event
+  publication, post-commit persistence, and asynchronous email delivery are
+  implemented.
+- `./gradlew compileJava`, `./gradlew test`, and `./gradlew bootJar` pass.
+- Low-stock, expense, project-status, and other producers remain deferred until
+  recipient policies are defined. SMS, delivery status/retries, deduplication,
+  and an outbox remain intentional follow-up work.
 
 ## Phase 11: Verification and Hardening
 
 Goal: verify the implemented system and close migration gaps.
+
+### Phase 11 Decisions (2026-09-02)
+
+- Module integration tests use the existing Spring Boot `test` profile and H2
+  database. Testcontainers and an automated PostgreSQL migration test are not
+  added in this phase.
+- PostgreSQL Flyway execution and Hibernate validation remain operational
+  deployment checks rather than Gradle test gates.
+- Phase 11 hardens only implemented capabilities. Contractor and approval
+  capabilities remain out of scope because they are not implemented.
+- Existing H2 integration tests remain the primary endpoint verification
+  mechanism; focused domain, handler, repository, and security tests are added
+  for behavior that broad endpoint tests cannot isolate.
+- Docker verification is performed when the local Docker daemon is available;
+  otherwise the limitation is recorded without claiming image validation.
 
 - [x] Enable the Gradle test task.
 - [ ] Add handler tests for expected `Result` outcomes.

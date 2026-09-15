@@ -1,6 +1,7 @@
 package io.github.alexisTrejo11.construction.company.modules.budget.features.item.delete;
 
 import io.github.alexisTrejo11.construction.company.shared.AppErrorResolver;
+import io.github.alexisTrejo11.construction.company.shared.ResponseWrapper;
 import io.github.alexisTrejo11.construction.company.shared.dto.auth.CurrentUser;
 import io.github.alexisTrejo11.construction.company.shared.dto.auth.UserContext;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +18,7 @@ public class DeleteBudgetItemController {
     private final DeleteBudgetItemHandler handler;
 
     @DeleteMapping("/{itemId}")
-    public ResponseEntity<?> handle(@CurrentUser UserContext user, @PathVariable Long itemId) {
+    public ResponseEntity<ResponseWrapper<?>> handle(@CurrentUser UserContext user, @PathVariable Long itemId) {
         var result = handler.handle(user, itemId);
         if (!result.isSuccess()) return AppErrorResolver.handleResult(result);
         return ResponseEntity.noContent().build();

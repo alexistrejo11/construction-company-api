@@ -124,6 +124,29 @@ class PhaseEightBudgetExpenseIntegrationTest {
         assertThat(expenseRepository.findById(expenseId).orElseThrow().getStatus().name()).isEqualTo("APPROVED");
     }
 
+    @Test
+    void budgetRoutesExposeValidationCsrfAndReadOnlyLifecycleRules() throws Exception {
+        Long projectId = createProject();
+        mockMvc.perform(post("/v2/api/projects/{projectId}/budget", projectId)
+                .with(adminRequest()).contentType(MediaType.APPLICATION_JSON).content("{\"currency\":\"USD\"}"))
+            .andExpect(status().isForbidden()).andExpect(jsonPath("$.error").exists());
+        mockMvc.perform(post("/v2/api/projects/{projectId}/budget", projectId)
+                .with(adminRequest()).with(csrf()).contentType(MediaType.APPLICATION_JSON).content("{}"))
+            .andExpect(status().isBadRequest()).andExpect(jsonPath("$.error").exists());
+        mockMvc.perform(post("/v2/api/projects/{projectId}/budget", projectId)
+                .with(adminRequest()).with(csrf()).contentType(MediaType.APPLICATION_JSON).content("{\"currency\":\"USD\"}"))
+            .andExpect(status().isCreated()).andExpect(jsonPath("$.data").exists());
+        Long budgetId = budgetRepository.findByProjectId(projectId).orElseThrow().getId();
+        mockMvc.perform(post("/v2/api/budgets/{budgetId}/approve", budgetId)
+                .with(adminRequest()).with(csrf())).andExpect(status().isOk());
+        mockMvc.perform(post("/v2/api/budgets/{budgetId}/close", budgetId)
+                .with(adminRequest()).with(csrf())).andExpect(status().isOk());
+        mockMvc.perform(patch("/v2/api/budgets/{budgetId}", budgetId)
+                .with(adminRequest()).with(csrf()).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"currency\":\"EUR\"}"))
+            .andExpect(status().isUnprocessableEntity()).andExpect(jsonPath("$.error").exists());
+    }
+
     private org.springframework.test.web.servlet.request.RequestPostProcessor adminRequest() {
         return user(admin.getEmail()).roles("COMPANY_ADMIN");
     }

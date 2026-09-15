@@ -141,7 +141,9 @@ These are initial proposals and must be refined as the phase, budget, expense, a
 
 ## Persistence Note
 
-The current JPA model exposes project-owned phase and member collections with cascading behavior. Whether those relationships remain aggregate-controlled or are persisted through independently managed nested-area repositories is still tracked in `docs/pending/architecture-decisions.md`.
+Project phases and members are independently managed nested resources with
+their own repositories and foreign keys. They cannot exist without a valid
+project, but they are not persisted through project cascade or orphan removal.
 
 ## Use Cases
 

@@ -97,15 +97,19 @@ The global exception handler remains the last boundary for uncaught exceptions. 
 
 ## Current Implementation Status
 
-The codebase is currently mixed and is not yet fully aligned with this convention:
+The active implementation uses the documented result and envelope model:
 
-- `Result<T>` already defines `CONFLICT`, `VALIDATION`, `BUSINESS_RULE`, `NOT_FOUND`, and `UNKNOWN` outcomes.
-- `AppErrorResolver` centralizes the conversion of failed results into `ResponseEntity` responses.
-- The current `ResponseWrapper` still serializes a `success` boolean and must be aligned with the contract above before this convention is fully implemented.
-- Several handlers already return `Result<T>` for not-found, conflict, and business outcomes.
-- Some domain methods still throw `BusinessRuleException`, `IllegalStateException`, or `IllegalArgumentException` for rules that are expected to become result-based.
-- Jakarta validation currently fails before handler execution through Spring's `MethodArgumentNotValidException` flow.
+- `Result<T>` defines validation, unauthenticated, forbidden, not-found,
+  conflict, business-rule, and unknown outcomes.
+- `AppErrorResolver` centralizes failed-result to HTTP translation.
+- `ResponseWrapper` contains mutually exclusive nullable `data` and `error`
+  fields and no success boolean.
+- Jakarta validation is handled centrally through
+  `MethodArgumentNotValidException`.
 - `GlobalExceptionHandler` handles framework and uncaught exception paths.
+
+Phase 11 verifies remaining expected business failures and migrates any that
+still use ordinary exceptions where a result is the established contract.
 
 New code should follow this convention. Existing code should be migrated deliberately rather than changed mechanically, especially where exception behavior is part of a security or infrastructure boundary.
 

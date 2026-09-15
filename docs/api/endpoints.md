@@ -162,6 +162,10 @@ Only approved expenses count toward executed budget amounts.
 | PATCH | `/inventory/items/{itemId}/status` | `INVENTORY_ITEM_STATUS_MANAGE` | Activate or deactivate an inventory item. | `200 OK` |
 | GET | `/inventory/items/{itemId}/balance` | `INVENTORY_BALANCE_READ` | Get item balance by location. | `200 OK` |
 
+Inventory item list filters are `search`, `category`, `trackingMode`, and
+`active`, with optional one-based `page`, `size`, and `sort` parameters. Item
+balance responses contain item identity and balances grouped by location.
+
 ## Inventory Locations
 
 | Method | Path | Permission | Description | Success |
@@ -172,6 +176,11 @@ Only approved expenses count toward executed budget amounts.
 | PATCH | `/inventory/locations/{locationId}` | `INVENTORY_LOCATION_UPDATE` | Update location data. | `200 OK` |
 | PATCH | `/inventory/locations/{locationId}/status` | `INVENTORY_LOCATION_STATUS_MANAGE` | Activate or deactivate a location. | `200 OK` |
 | GET | `/inventory/locations/{locationId}/balance` | `INVENTORY_BALANCE_READ` | Get stock held at a location. | `200 OK` |
+
+Inventory location list filters are `search`, `type`, `projectId`, and
+`active`, with optional one-based `page`, `size`, and `sort` parameters.
+Location balance responses contain location identity and balances grouped by
+item.
 
 ## Inventory Movements
 
@@ -186,6 +195,14 @@ Only approved expenses count toward executed budget amounts.
 
 Posted movements are immutable. The reverse endpoint is the correction mechanism rather than an update or delete operation.
 
+Movement list filters are `type`, `status`, `sourceLocationId`,
+`targetLocationId`, `itemId`, `from`, `to`, `page`, `size`, and `sort`.
+Movement detail includes its lines. `RECEIPT` uses a target location, `ISSUE`
+and `RETURN` use a source location, `TRANSFER` uses different source and
+target locations, and `ADJUSTMENT` uses a location plus `INCREASE` or
+`DECREASE`. All quantities are positive. A serialized line contains exactly
+one serial and quantity `1`.
+
 ## Notifications
 
 | Method | Path | Permission | Description | Success |
@@ -196,6 +213,14 @@ Posted movements are immutable. The reverse endpoint is the correction mechanism
 | PATCH | `/notifications/read-all` | Authenticated | Mark all current-user notifications as read. | `200 OK` |
 
 There is no public notification creation endpoint. Notifications are created by application workflows and business events.
+
+`GET /notifications` supports optional `read`, one-based `page`, `size`, and
+`sort` parameters and returns newest notifications first by default. The
+response is a `PageResponse` containing notification type, title, message,
+optional `resourceType`/`resourceId`, `readAt`, and creation metadata.
+`PATCH /notifications/{notificationId}/read` is idempotent. The read-all
+response contains the number of notifications newly marked read. A notification
+owned by another user is returned as not found to avoid resource disclosure.
 
 ## Deferred Features
 

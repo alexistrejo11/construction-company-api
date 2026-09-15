@@ -10,12 +10,13 @@ import io.github.alexisTrejo11.construction.company.shared.authorization.Permiss
 import io.github.alexisTrejo11.construction.company.shared.dto.auth.UserContext;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
+import java.util.HexFormat;
 import lombok.RequiredArgsConstructor;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,7 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class CreateInvitationHandler {
     private final UserRepository userRepository;
     private final InvitationRepository invitationRepository;
-    private final JavaMailSender mailSender;
+    private final ApplicationEventPublisher eventPublisher;
     private final GlobalAuthorizationPolicy authorizationPolicy;
 
     @Transactional
@@ -53,11 +54,8 @@ public class CreateInvitationHandler {
         invitation.setExpiresAt(Instant.now().plus(7, ChronoUnit.DAYS));
         invitationRepository.save(invitation);
 
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(command.email());
-        message.setSubject("Construction company invitation");
-        message.setText("Invitation token: " + rawToken);
-        mailSender.send(message);
+        eventPublisher.publishEvent(new InvitationCreatedEvent(
+            invitation.getId(), savedUser.getId(), savedUser.getEmail(), rawToken));
 
         return Result.success();
     }
@@ -67,8 +65,8 @@ public class CreateInvitationHandler {
             byte[] hash = MessageDigest.getInstance("SHA-256")
                 .digest(rawToken.getBytes(StandardCharsets.UTF_8));
 
-            return java.util.HexFormat.of().formatHex(hash);
-        } catch (java.security.NoSuchAlgorithmException exception) {
+            return HexFormat.of().formatHex(hash);
+        } catch (NoSuchAlgorithmException exception) {
             throw new IllegalStateException("SHA-256 is unavailable", exception);
         }
     }

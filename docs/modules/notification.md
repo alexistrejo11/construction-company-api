@@ -4,6 +4,10 @@
 
 Notify users about relevant business events and actions through one or more delivery channels.
 
+Phase 10 initially implements invitation notifications only. Inventory,
+expense, project-status, and low-stock producers remain deferred until their
+recipient and threshold policies are defined.
+
 ## Main Concepts
 
 - Notification.
@@ -29,14 +33,20 @@ An event is not an email, and a notification is not the event itself. A single e
 
 ## Notification Record
 
-The persistent in-app notification is the canonical user-facing record. It should contain concepts such as:
+The persistent in-app notification is the canonical user-facing record. It
+contains:
 
 - Recipient.
 - Notification type.
 - Title and message.
 - Read state or `readAt` timestamp.
 - Creation timestamp.
-- Optional reference to the related resource or event.
+- Optional `resourceType` and `resourceId` reference for client navigation.
+
+The initial notification type is `INVITATION`. A notification belongs to one
+persisted recipient user and uses `readAt == null` for unread state. The
+recipient need not be active for the record to be persisted, although only
+active users can authenticate and access the notification API.
 
 Notifications are created by application workflows, not by arbitrary public clients through a generic create endpoint.
 
@@ -83,6 +93,10 @@ Low-stock detection belongs to inventory policy, not to the email service. The i
 
 The system should avoid sending repeated alerts for every movement while an item remains below the threshold. The exact deduplication or re-notification policy remains to be defined.
 
+Low-stock notifications are not part of the initial Phase 10 implementation.
+They require an inventory threshold field, a threshold-crossing definition,
+recipient resolution, and a deduplication or re-notification policy.
+
 ## Delivery Channels
 
 The initial channels are:
@@ -104,6 +118,8 @@ The initial in-process event approach is appropriate for the portfolio project. 
 - An unread notification remains available until it is marked read or removed by policy.
 - A notification belongs to a valid recipient.
 - Notification creation must not change the state of the business resource that caused it.
+- Marking an already-read notification is idempotent and succeeds without changing its read timestamp.
+- Users may only retrieve or update notifications belonging to themselves; an inaccessible identifier is reported as not found.
 
 ## Use Cases
 
@@ -119,9 +135,23 @@ The initial in-process event approach is appropriate for the portfolio project. 
 - Internal application workflows create notifications for recipients.
 - Delivery channel configuration is an infrastructure concern.
 
-## Current Implementation Status
+Notification routes require authentication but do not require a notification
+permission. Ownership is enforced by handlers using the current user ID.
 
-The current code mixes notification persistence, expense-specific event mapping, and email delivery inside `NotificationService`. It also exposes a generic notification creation endpoint. This is transitional code and should not be copied into new feature slices.
+The initial list operation supports an optional `read` filter, one-based
+`page`, `size`, and `sort`; default ordering is newest first. Mark-all returns
+the number of notifications newly marked read.
+
+## Implementation Status
+
+Phase 10 implements notification persistence, current-user list/detail/read
+operations, invitation event publication, post-commit notification creation,
+and asynchronous Spring Mail delivery. There is no public notification-create
+endpoint.
+
+The initial event mechanism is in-process and best effort. Delivery status,
+retries, SMS, low-stock notifications, and a transactional outbox are deferred
+until their product or reliability policies are defined.
 
 ## Classification
 

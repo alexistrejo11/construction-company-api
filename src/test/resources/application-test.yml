@@ -36,11 +36,6 @@ spring:
       embedding:
         enabled: false
 
-JWT_SECRET_KEY: MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDE=
-jwt:
-  expiration:
-    ms: 86400000
-
 file:
   upload:
     dir: ${java.io.tmpdir}/company-expenses-test-uploads

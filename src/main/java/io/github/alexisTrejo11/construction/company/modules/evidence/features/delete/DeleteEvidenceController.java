@@ -1,6 +1,7 @@
 package io.github.alexisTrejo11.construction.company.modules.evidence.features.delete;
 
 import io.github.alexisTrejo11.construction.company.shared.AppErrorResolver;
+import io.github.alexisTrejo11.construction.company.shared.ResponseWrapper;
 import io.github.alexisTrejo11.construction.company.shared.dto.auth.CurrentUser;
 import io.github.alexisTrejo11.construction.company.shared.dto.auth.UserContext;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +16,7 @@ public class DeleteEvidenceController {
     private final DeleteEvidenceHandler handler;
 
     @DeleteMapping("/v2/api/evidence/{evidenceId}")
-    public ResponseEntity<?> delete(@CurrentUser UserContext user, @PathVariable Long evidenceId) {
+    public ResponseEntity<ResponseWrapper<?>> delete(@CurrentUser UserContext user, @PathVariable Long evidenceId) {
         var result = handler.handle(user, evidenceId);
         if (!result.isSuccess()) return AppErrorResolver.handleResult(result);
         return ResponseEntity.noContent().build();

@@ -10,11 +10,10 @@ The application will use Spring Security's stateful session mechanism instead of
 
 Authentication is established by Spring Security before a request reaches a controller. The authenticated principal is stored in Spring Security's `SecurityContext`, and the session maintains authentication between requests.
 
-The application is therefore not designed around stateless JWT authentication. Existing JWT configuration, decoders, encoders, converters, and bearer-token rules are legacy implementation details that must be removed or replaced as part of the authentication migration.
-
-The current code still configures `SessionCreationPolicy.STATELESS` and an OAuth2 resource server with JWT decoding. That configuration does not represent the target architecture and must not be copied into new security code.
-
-The current code also contains `UserRole` and a separate `ProjectRole` enum, while `UserContext` currently stores string role names. These are legacy or transitional shapes; the target model uses one global role model plus permissions and project membership scope.
+The application is therefore not designed around stateless JWT authentication.
+JWT/OAuth2 resource-server configuration is not part of the active security
+flow and must not be reintroduced. The target model uses one global role model
+plus permissions and project membership scope.
 
 The exact login and logout endpoints, session repository, cookie settings, and session expiration policy remain implementation decisions. Choosing sessions also requires an explicit CSRF policy; CSRF must not be disabled merely because the application is an API.
 
@@ -150,13 +149,8 @@ The initial model does not assign a different role to the same user for each pro
 
 ## Pending Decisions
 
-- Define the login and logout flow using Spring Security sessions.
-- Define invitation creation, expiration, resend, acceptance, and cancellation behavior.
-- Define session storage, cookie attributes, expiration, and invalidation behavior.
-- Define the CSRF policy for browser-based session authentication.
-- Define the role-to-permission matrix.
-- Define which permissions are global and which are project-scoped.
-- Define the final authorization policy implementation and whether method security complements handler policies.
-- Define the canonical unauthenticated and access-denied response envelope.
+- Refine invitation resend and cancellation behavior if those deferred endpoints are implemented.
+- Define additional role grants when non-administrator operational workflows are approved.
+- Define whether method security should complement the existing handler policies.
 
 The initial authorization design is documented in `docs/conventions/authorization.md`.
