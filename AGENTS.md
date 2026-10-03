@@ -6,13 +6,14 @@
 - Use the checked-in `./gradlew` wrapper. The build requires Java 26 (the wrapper uses Gradle 9.4.0); Spring Boot is 3.5.16.
 - Business capabilities live in `modules/<module>/` as vertical feature slices: a use case normally has its controller, command/query, and handler under `features/<use-case>/`. Put types shared by feature slices in the closest `shared/` package; root `shared/` is only for cross-module technical primitives.
 - Handlers own use-case orchestration and transaction boundaries. Controllers validate and translate HTTP only; JPA entities may contain domain behavior but must not depend on repositories, HTTP, or feature types.
-- `docs/architecture.md` defines the confirmed package and ownership conventions. `docs/planification.md` is planning context, not evidence of implemented behavior or API contracts.
+- Spec-Driven Development docs live in `docs/sdd/`; `docs/sdd/README.md` is their index and planning context, not evidence of implemented behavior or API contracts. `docs/sdd/architecture.md` defines the confirmed package and ownership conventions.
+- Open work and unresolved decisions live in `docs/pending/`. `docs/portfolio/` is an external showcase following `docs/doc_guide.md`; never use it as a spec or contract.
 
 ## Commands And Verification
 
 - Compile production code: `./gradlew compileJava`.
 - Run locally: `./gradlew bootRun`; build the executable jar: `./gradlew bootJar`.
-- Run `./gradlew test` for verification. Every implemented endpoint requires integration coverage under `docs/conventions/testing.md`; a successful task with no test sources is not endpoint coverage.
+- Run `./gradlew test` for verification. Every implemented endpoint requires integration coverage under `docs/sdd/conventions/testing.md`; a successful task with no test sources is not endpoint coverage.
 - No lint, formatter, or static-analysis Gradle task is configured.
 
 ## Runtime And Persistence
@@ -28,7 +29,7 @@
 
 ## Code And Feature Conventions
 
-- Treat `docs/architecture.md`, `docs/api/endpoints.md`, and `docs/conventions/` as the source of truth. Do not invent routes, merge resource boundaries, or keep endpoints that are not in the documented contract.
+- Treat `docs/sdd/architecture.md`, `docs/sdd/api/endpoints.md`, and `docs/sdd/conventions/` as the source of truth. Do not invent routes, merge resource boundaries, or keep endpoints that are not in the documented contract.
 - Keep authentication/session endpoints in `modules/auth/`. Keep invitation, account-profile, and administrative user endpoints in `modules/user/`. A module must not become a catch-all for another capability's HTTP API.
 - One use case owns one feature package. Place its controller, command or query, handler, response, and feature-local mapper together under `modules/<module>/features/<use-case>/`.
 - Controllers only bind/validate HTTP input, call one handler, and translate `Result<T>` through the response boundary. Put orchestration, transactions, repository calls, mail dispatch, token handling, and status rules in handlers or focused shared capabilities.

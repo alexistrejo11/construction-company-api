@@ -27,12 +27,12 @@ Notification ── optionally references a resource type and identifier
 
 Approval is excluded from the current relationship map. If introduced later, its target relationship must be designed explicitly rather than assumed to be polymorphic.
 
-The inventory relationships above are confirmed for Phase 9. Movement lines
+The inventory relationships above are confirmed. Movement lines
 are owned by their movement and are replaced only while the movement is a
 draft. Inventory locations may reference projects for data integrity, but
 inventory authorization remains global rather than project-membership scoped.
 
-The notification relationship is confirmed for Phase 10: a notification is
+The notification relationship is confirmed: a notification is
 owned by one recipient user, and its optional resource reference is stored as
 application metadata rather than a polymorphic foreign key.
 

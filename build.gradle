@@ -13,6 +13,12 @@ java {
 	}
 }
 
+springBoot {
+	buildInfo {
+		excludes = ['time']
+	}
+}
+
 configurations {
 	compileOnly {
 		extendsFrom annotationProcessor

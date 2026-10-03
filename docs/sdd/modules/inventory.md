@@ -4,7 +4,7 @@
 
 Manage materials and inventory information used by construction projects.
 
-Phase 9 is intentionally limited to catalog management, logistical locations,
+The inventory module is intentionally limited to catalog management, logistical locations,
 stock movements, and history-derived balances. Low-stock notifications and
 movement evidence are deferred until their cross-module contracts are defined.
 
@@ -143,7 +143,7 @@ An `InventoryBalance` table may be introduced later as a materialized performanc
 
 ## Access Rules
 
-All inventory permissions are global in Phase 9. Inventory operations do not
+All inventory permissions are global. Inventory operations do not
 require project membership, including operations involving a `PROJECT_SITE`.
 The authenticated user must still hold the specific inventory permission.
 `COMPANY_ADMIN` receives all inventory permissions through the role catalog;
@@ -155,7 +155,7 @@ authorization scope.
 
 ## Implementation Status
 
-Phase 9 is implemented with item, location, movement, posting, reversal, and
+The inventory module is implemented with item, location, movement, posting, reversal, and
 history-derived balance endpoints. Production persistence is provided by the
 `V6__create_inventory.sql` migration, and the complete documented endpoint
 surface is covered by MockMvc integration tests.

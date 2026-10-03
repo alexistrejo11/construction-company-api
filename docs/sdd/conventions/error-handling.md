@@ -108,9 +108,6 @@ The active implementation uses the documented result and envelope model:
   `MethodArgumentNotValidException`.
 - `GlobalExceptionHandler` handles framework and uncaught exception paths.
 
-Phase 11 verifies remaining expected business failures and migrates any that
-still use ordinary exceptions where a result is the established contract.
-
 New code should follow this convention. Existing code should be migrated deliberately rather than changed mechanically, especially where exception behavior is part of a security or infrastructure boundary.
 
 ## Rationale

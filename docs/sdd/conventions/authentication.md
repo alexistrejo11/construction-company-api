@@ -153,4 +153,4 @@ The initial model does not assign a different role to the same user for each pro
 - Define additional role grants when non-administrator operational workflows are approved.
 - Define whether method security should complement the existing handler policies.
 
-The initial authorization design is documented in `docs/conventions/authorization.md`.
+The initial authorization design is documented in `docs/sdd/conventions/authorization.md`.

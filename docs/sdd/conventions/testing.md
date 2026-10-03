@@ -19,7 +19,7 @@ Tests for a workflow create prerequisites through their HTTP endpoints. For exam
 
 ## Authentication And External Boundaries
 
-Endpoint tests do not repeat the authentication or invitation workflow. They use Spring Security test support to provide a valid authenticated principal or session stub appropriate to the endpoint. Authentication, session, CSRF, and invitation flows receive their own integration tests in Phase 3.
+Endpoint tests do not repeat the authentication or invitation workflow. They use Spring Security test support to provide a valid authenticated principal or session stub appropriate to the endpoint. Authentication, session, CSRF, and invitation flows receive their own dedicated integration tests.
 
 External side effects are mocked only at their infrastructure boundary. SMTP, file storage, and other network clients must be replaced with Spring test mocks. Business handlers, repositories, domain entities, and HTTP controllers remain real application components.
 
@@ -33,4 +33,4 @@ External side effects are mocked only at their infrastructure boundary. SMTP, fi
 
 ## Completion Rule
 
-An endpoint is not complete until its required integration tests pass through `./gradlew test`. A phase may defer tests only while the test task or supporting infrastructure is unavailable; that deferral must be recorded explicitly in the implementation plan.
+An endpoint is not complete until its required integration tests pass through `./gradlew test`. Tests may be deferred only while the test task or supporting infrastructure is unavailable; that deferral must be recorded explicitly in `docs/pending/implementation-backlog.md`.

@@ -1,0 +1,187 @@
+# CI/CD for the Spring Boot API (image behind Cloudflare TLS).
+#
+# Flow:
+#   1) test     — Gradle tests (PRs and main).
+#   2) publish  — build & push image to GHCR (main only, after test passes).
+#   3) deploy   — SSH through Cloudflare Access (cloudflared) → pull THIS image,
+#                 recreate the container, remove ONLY unused images for this project.
+#
+# Required GitHub secrets (same VPS / Cloudflare token as your other deploys):
+#   SSH_HOST              — Access hostname, e.g. ssh.alexis-trejo.com
+#   SSH_USER              — Linux user on the VPS, e.g. alexistrejo
+#   SSH_PRIVATE_KEY       — Full private key (same key you use locally for fedora-host)
+#   DEPLOY_PATH           — Absolute path to compose dir, e.g. /home/alexistrejo/homelab/deploys/servers/construction-company-api
+#   CF_CLIENT_ID          — Cloudflare Access Service Token Client ID
+#   CF_CLIENT_SECRET      — Cloudflare Access Service Token Client Secret
+#   GHCR_TOKEN            — GitHub PAT with read:packages (server pull from ghcr.io)
+#
+# Server layout (homelab compose, not the docker-compose.yml in this repo):
+#   $DEPLOY_PATH/docker-compose.yml  (service name: api, image: ghcr.io/<owner>/<repo>:latest)
+
+name: Backend CI-CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+env:
+  IMAGE_NAME: ghcr.io/${{ github.repository }}
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Compile and test Gradle project
+  # ---------------------------------------------------------------------------
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 26
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "26"
+          cache: gradle
+
+      - name: Run tests
+        run: ./gradlew test --no-daemon
+
+  # ---------------------------------------------------------------------------
+  # Login, build and push Docker image to ghcr.io
+  # ---------------------------------------------------------------------------
+  publish:
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Lowercase image name
+        run: echo "IMAGE=$(echo '${{ env.IMAGE_NAME }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_ENV"
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:latest
+            ${{ env.IMAGE }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ---------------------------------------------------------------------------
+  # Deploy - SSH via Cloudflare Access, then pull/restart this project's service.
+  # ---------------------------------------------------------------------------
+  deploy:
+    needs: publish
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    steps:
+      - name: Install cloudflared
+        run: |
+          curl -fsSL --output cloudflared.deb \
+            https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
+          sudo dpkg -i cloudflared.deb
+          cloudflared --version
+
+      - name: Configure SSH over Cloudflare Access
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${SSH_HOST}" ] || [ -z "${SSH_USER}" ] || [ -z "${SSH_PRIVATE_KEY}" ]; then
+            echo "Missing secrets: SSH_HOST, SSH_USER, and/or SSH_PRIVATE_KEY" >&2
+            echo "Add them in Settings → Secrets and variables → Actions." >&2
+            exit 1
+          fi
+
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+
+          # Same private key you use locally (e.g. fedora-host).
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+
+          # Alias "deploy-host" = Cloudflare Access SSH hostname.
+          # Service Token auth must NOT go in ProxyCommand as --id/--secret:
+          # cloudflared treats those positionals as a listen address ("missing port").
+          # Pass CF_ACCESS_CLIENT_ID / CF_ACCESS_CLIENT_SECRET via env on the ssh step.
+          {
+            echo "Host deploy-host"
+            echo "  HostName ${SSH_HOST}"
+            echo "  User ${SSH_USER}"
+            echo "  IdentityFile ~/.ssh/id_ed25519"
+            echo "  IdentitiesOnly yes"
+            echo "  ProxyCommand cloudflared access ssh --hostname %h"
+            echo "  StrictHostKeyChecking accept-new"
+          } > ~/.ssh/config
+          chmod 600 ~/.ssh/config
+
+      - name: Deploy via SSH (GHCR pull + restart)
+        env:
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+          GHCR_USER: ${{ github.actor }}
+          IMAGE: ${{ env.IMAGE_NAME }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          # cloudflared picks these up for non-interactive Access (Service Token).
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_CLIENT_SECRET }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${DEPLOY_PATH}" ] || [ -z "${GHCR_TOKEN}" ] || [ -z "${CF_ACCESS_CLIENT_ID}" ] || [ -z "${CF_ACCESS_CLIENT_SECRET}" ]; then
+            echo "Missing secrets: DEPLOY_PATH, GHCR_TOKEN, CF_CLIENT_ID, and/or CF_CLIENT_SECRET" >&2
+            echo "Add them in Settings → Secrets and variables → Actions." >&2
+            exit 1
+          fi
+
+          IMAGE="$(echo "$IMAGE" | tr '[:upper:]' '[:lower:]')"
+
+          # printf %q keeps tokens with special chars safe inside the remote shell.
+          ssh deploy-host \
+            "export GHCR_TOKEN=$(printf '%q' "$GHCR_TOKEN") GHCR_USER=$(printf '%q' "$GHCR_USER") IMAGE=$(printf '%q' "$IMAGE") DEPLOY_PATH=$(printf '%q' "$DEPLOY_PATH"); bash -s" <<'REMOTE'
+          set -euo pipefail
+
+          cd "${DEPLOY_PATH}"
+
+          echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
+
+          docker compose pull api
+          docker compose up -d --remove-orphans api
+
+          # Safe cleanup: only unused images for THIS project (not host-wide prune).
+          echo "Cleaning unused images for $IMAGE only..."
+          docker images "$IMAGE" --format '{{.ID}}' | sort -u | while read -r id; do
+            if [ -z "$(docker ps -aq --filter "ancestor=${id}")" ]; then
+              docker rmi "$id" 2>/dev/null || true
+            fi
+          done
+
+          docker logout ghcr.io || true
+          echo "Deploy finished."
+          REMOTE

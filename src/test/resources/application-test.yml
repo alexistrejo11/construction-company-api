@@ -40,6 +40,15 @@ file:
   upload:
     dir: ${java.io.tmpdir}/company-expenses-test-uploads
 
+APP_NAME: Construction Company API Test
+APP_VERSION: 2.0.0
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
 app:
   rate-limit:
     capacity: 1000

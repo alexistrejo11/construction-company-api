@@ -95,7 +95,7 @@ INVENTORY_MOVEMENT_UPDATE, INVENTORY_MOVEMENT_POST,
 INVENTORY_MOVEMENT_REVERSE
 ```
 
-Inventory permissions are global in Phase 9. They do not require active
+Inventory permissions are global. They do not require active
 project membership, even when a location references a project. The project
 reference is validated for existence only. `COMPANY_ADMIN` does not need a
 project-membership bypass for inventory because these permissions are global.

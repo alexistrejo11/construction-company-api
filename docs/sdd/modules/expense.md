@@ -13,7 +13,7 @@ Manage costs incurred by construction projects and their supporting evidence.
 
 An expense belongs to a budget and is normally associated with a budget item. The budget and item provide the planning context; the expense represents an actual incurred cost.
 
-Phase 7.5 introduces only the minimal persisted expense target needed for referentially safe evidence association. Its project ownership, amount, currency, and initial draft state are placeholders for the complete Phase 8 budget-linked workflow.
+Every expense also belongs to a project, which provides the ownership used for scoped access and for referentially safe evidence association.
 
 ## Initial Lifecycle
 

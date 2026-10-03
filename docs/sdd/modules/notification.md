@@ -4,7 +4,7 @@
 
 Notify users about relevant business events and actions through one or more delivery channels.
 
-Phase 10 initially implements invitation notifications only. Inventory,
+Invitation notifications are currently the only implemented producer. Inventory,
 expense, project-status, and low-stock producers remain deferred until their
 recipient and threshold policies are defined.
 
@@ -93,7 +93,7 @@ Low-stock detection belongs to inventory policy, not to the email service. The i
 
 The system should avoid sending repeated alerts for every movement while an item remains below the threshold. The exact deduplication or re-notification policy remains to be defined.
 
-Low-stock notifications are not part of the initial Phase 10 implementation.
+Low-stock notifications are not implemented yet.
 They require an inventory threshold field, a threshold-crossing definition,
 recipient resolution, and a deduplication or re-notification policy.
 
@@ -144,7 +144,7 @@ the number of notifications newly marked read.
 
 ## Implementation Status
 
-Phase 10 implements notification persistence, current-user list/detail/read
+The notification module implements persistence, current-user list/detail/read
 operations, invitation event publication, post-commit notification creation,
 and asynchronous Spring Mail delivery. There is no public notification-create
 endpoint.

@@ -16,7 +16,7 @@ An evidence record may contain:
 - Author or reporting user.
 - One or more attachments.
 
-Evidence belongs to exactly one supported target. Phase 7 supports project phases, and Phase 7.5 adds expenses through an explicit foreign key. It does not automatically change the target's status or lifecycle. Full budget-linked expense behavior remains in Phase 8.
+Evidence belongs to exactly one supported target: a project phase or an expense, each referenced through an explicit foreign key. It does not automatically change the target's status or lifecycle.
 
 ## Attachment
 
@@ -41,7 +41,7 @@ Attachment is not a business event and does not contain project, phase, or expen
 
 `Evidence` stores exactly one target foreign key, either `phase_id` or `expense_id`, plus a non-null `author_user_id` foreign key. A database check constraint prevents both or neither target from being set. `Attachment` stores a non-null `evidence_id` foreign key. The implementation uses explicit foreign keys instead of a polymorphic target reference so the database preserves target integrity. Evidence is deleted with its attachment metadata; attachment file contents are removed through the file-storage boundary.
 
-The Phase 7.5 expense target is intentionally minimal: it provides the project ownership required for scoped evidence access. Budget, budget-item, amount, and expense lifecycle workflows remain Phase 8 responsibilities.
+Expense evidence uses the expense's project ownership for scoped evidence access. Budget, budget-item, amount, and expense lifecycle rules belong to the expense module.
 
 ## Upload Rules
 
@@ -52,4 +52,4 @@ The Phase 7.5 expense target is intentionally minimal: it provides the project o
 
 ## Legacy Migration
 
-No expense-specific attachment implementation exists in the current codebase. Phase 8 must use this shared model rather than introduce `ExpenseAttachmentEntity` or `Expense.invoiceUrl`.
+No expense-specific attachment implementation exists in the codebase. Expense files must use this shared model rather than introduce `ExpenseAttachmentEntity` or `Expense.invoiceUrl`.

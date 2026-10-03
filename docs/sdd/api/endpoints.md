@@ -11,8 +11,20 @@ This is the single endpoint catalog for the target API. It is a planning contrac
 - State changes use explicit action endpoints when the operation represents a business transition.
 - Permissions listed below are implemented permissions for the current endpoint set.
 - Project-scoped operations require an active project membership unless an explicit global permission bypass applies.
-- Success and error response envelopes follow `docs/conventions/error-handling.md`.
-- Commands, queries, request DTOs, and response DTOs follow `docs/conventions/validation.md` and `docs/architecture.md`.
+- Success and error response envelopes follow `docs/sdd/conventions/error-handling.md`.
+- Commands, queries, request DTOs, and response DTOs follow `docs/sdd/conventions/validation.md` and `docs/sdd/architecture.md`.
+
+## Root and Operational Endpoints
+
+These routes live outside the `/v2/api` base path.
+
+| Method | Path | Permission | Description | Success |
+|---|---|---|---|---|
+| GET | `/` | Public | Present the API name, description, version, base path, and documentation and health links. | `200 OK` |
+| GET | `/actuator/health` | Public | Report application health. | `200 OK` |
+| GET | `/actuator/info` | Public | Report application build information. | `200 OK` |
+
+These public routes are excluded from CSRF protection. Every other exposed actuator endpoint requires an authenticated session.
 
 ## Authentication and Invitations
 
@@ -98,7 +110,7 @@ There is no project-role update endpoint. Project membership provides scope; glo
 
 Evidence is mutable and does not directly change the lifecycle of its target resource.
 
-Phase 7 supports evidence for project phases. Phase 7.5 adds the explicit expense association and expense evidence endpoints; full budget-linked expense workflows remain Phase 8.
+Evidence supports two targets: project phases and expenses, each through an explicit association.
 
 ## Budgets
 

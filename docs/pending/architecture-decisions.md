@@ -28,7 +28,7 @@ This file tracks unresolved design questions. Its contents are not architectural
 
 ## Nested-Area Persistence Ownership
 
-Resolved by Phase 1: project phases and project members are subordinate
+Resolved: project phases and project members are subordinate
 resources with their own repositories and update lifecycle. Foreign keys
 preserve the rule that neither resource can exist without a valid project;
 project cascade and orphan removal are not used.

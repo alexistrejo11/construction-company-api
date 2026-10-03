@@ -3,7 +3,11 @@ package io.github.alexisTrejo11.construction.company.config.security;
 import io.github.alexisTrejo11.construction.company.modules.user.shared.domain.UserStatus;
 import io.github.alexisTrejo11.construction.company.modules.user.shared.persistence.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
+import org.springframework.boot.actuate.health.HealthEndpoint;
+import org.springframework.boot.actuate.info.InfoEndpoint;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpMethod;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,6 +27,8 @@ import org.springframework.session.web.http.DefaultCookieSerializer;
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
+  private static final String HOME_PATH = "/";
+
   private final UserRepository users;
   private final SecurityExceptionHandlers.CustomAccessDeniedHandler accessDeniedHandler;
   private final SecurityExceptionHandlers.CustomAuthenticationEntryPoint authenticationEntryPoint;
@@ -40,12 +46,21 @@ public class SecurityConfig {
     csrf.setCookiePath("/");
     var csrfRequestHandler = new CsrfTokenRequestAttributeHandler();
 
+    var publicActuatorEndpoints = EndpointRequest.to(
+        HealthEndpoint.class,
+        InfoEndpoint.class
+    );
+
      return http.csrf(config -> config
              .csrfTokenRepository(csrf)
-             .csrfTokenRequestHandler(csrfRequestHandler))
+             .csrfTokenRequestHandler(csrfRequestHandler)
+             .ignoringRequestMatchers(publicActuatorEndpoints)
+             .ignoringRequestMatchers(HOME_PATH))
           .authorizeHttpRequests(auth -> auth
+              .requestMatchers(publicActuatorEndpoints).permitAll()
+              .requestMatchers(EndpointRequest.toAnyEndpoint()).authenticated()
+              .requestMatchers(HttpMethod.GET, HOME_PATH).permitAll()
               .requestMatchers(
-                  "/actuator/**",
                   "/v2/api/auth/csrf",
                   "/v2/api/auth/login",
                   "/v2/api/invitations/*/accept",
