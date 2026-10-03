@@ -1,0 +1,10 @@
+.git
+.gradle
+.idea
+.DS_Store
+.env
+bin
+build
+out
+uploads
+dev_construction.db

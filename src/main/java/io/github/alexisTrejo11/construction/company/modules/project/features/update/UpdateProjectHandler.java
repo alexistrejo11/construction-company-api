@@ -1,0 +1,74 @@
+package io.github.alexisTrejo11.construction.company.modules.project.features.update;
+
+import io.github.alexisTrejo11.construction.company.modules.project.shared.dto.ProjectResponse;
+import io.github.alexisTrejo11.construction.company.modules.project.shared.mapper.ProjectResponseMapper;
+import io.github.alexisTrejo11.construction.company.modules.project.shared.persistence.ProjectRepository;
+import io.github.alexisTrejo11.construction.company.modules.project.shared.domain.Project;
+import io.github.alexisTrejo11.construction.company.shared.Result;
+import io.github.alexisTrejo11.construction.company.modules.project.shared.policy.ProjectAuthorizationPolicy;
+import io.github.alexisTrejo11.construction.company.shared.authorization.Permission;
+import io.github.alexisTrejo11.construction.company.shared.dto.auth.UserContext;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import io.github.alexisTrejo11.construction.company.modules.project.shared.domain.ProjectStatus;
+
+@Service
+@RequiredArgsConstructor
+public class UpdateProjectHandler {
+  private final ProjectRepository repository;
+  private final ProjectResponseMapper mapper;
+  private final ProjectAuthorizationPolicy authorizationPolicy;
+
+  @Transactional
+  public Result<ProjectResponse> execute(UserContext user, Long projectId, UpdateProjectCommand command) {
+    Result<Void> authorization = authorizationPolicy.requireProjectPermission(
+        user,
+        projectId,
+        Permission.PROJECT_UPDATE
+    );
+    if (!authorization.isSuccess()) {
+      return Result.forbidden(authorization.getErrorMessage());
+    }
+
+    return repository.findById(projectId)
+        .map(project -> apply(project, command))
+        .orElseGet(() -> Result.notFound("Project not found"));
+  }
+
+  private Result<ProjectResponse> apply(Project project, UpdateProjectCommand command) {
+    if (project.getStatus() == ProjectStatus.COMPLETED
+        || project.getStatus() == ProjectStatus.CANCELLED) {
+      return Result.business("Terminal projects cannot be updated");
+    }
+
+    if (command.name() != null) {
+      project.setName(command.name());
+    }
+    if (command.description() != null) {
+      project.setDescription(command.description());
+    }
+    if (command.totalBudget() != null) {
+      project.setTotalBudget(command.totalBudget());
+    }
+    if (command.location() != null) {
+      project.setLocation(mapper.toSiteLocation(command.location()));
+    }
+    if (command.startDate() != null) {
+      project.setStartDate(command.startDate());
+    }
+    if (command.estimatedEndDate() != null) {
+      project.setEstimatedEndDate(command.estimatedEndDate());
+    }
+    if (command.actualEndDate() != null) {
+      project.setActualEndDate(command.actualEndDate());
+    }
+
+    Result<Void> validateResult = project.validate();
+    if (!validateResult.isSuccess()) {
+      return Result.business(validateResult.getErrorMessage());
+    }
+
+    return Result.success(mapper.toResponse(repository.save(project)));
+  }
+}

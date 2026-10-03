@@ -1,15 +1,21 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '3.4.1'
+	id 'org.springframework.boot' version '3.5.16'
 	id 'io.spring.dependency-management' version '1.1.7'
 }
 
-group = 'io.github.alexisTrejo11'
-version = '1.0.0'
+group = 'io.github.alexis-trejo-11'
+version = '2.0.0'
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(17)
+		languageVersion = JavaLanguageVersion.of(26)
+	}
+}
+
+springBoot {
+	buildInfo {
+		excludes = ['time']
 	}
 }
 
@@ -21,11 +27,10 @@ configurations {
 
 repositories {
 	mavenCentral()
-	maven { url = 'https://repo.spring.io/milestone' }
 }
 
 ext {
-	set('springAiVersion', "1.0.0-M4")
+	set('springAiVersion', "1.1.8")
 }
 
 dependencies {
@@ -34,51 +39,55 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'io.micrometer:micrometer-registry-prometheus'
 
 	// Test
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.junit.jupiter:junit-jupiter'
 	testImplementation 'org.mockito:mockito-junit-jupiter'
+	testImplementation 'org.springframework.security:spring-security-test'
 
 	// Database
 	testImplementation 'com.h2database:h2'
-	implementation 'org.springframework.ai:spring-ai-postgresml-spring-boot-starter'
+	runtimeOnly 'org.postgresql:postgresql'
+	runtimeOnly 'org.xerial:sqlite-jdbc'
+	implementation 'org.hibernate.orm:hibernate-community-dialects'
+	implementation 'org.springframework.ai:spring-ai-starter-model-postgresml-embedding'
 
 	implementation 'commons-io:commons-io:2.11.0' //  file handling
 
 	// Lombok
-	compileOnly 'org.projectlombok:lombok'
-	annotationProcessor 'org.projectlombok:lombok'
+	compileOnly 'org.projectlombok:lombok:1.18.40'
+	annotationProcessor 'org.projectlombok:lombok:1.18.40'
 
 	// auth
 	implementation 'org.springframework.boot:spring-boot-starter-security'
-	implementation 'org.springframework.security:spring-security-oauth2-jose'
-	implementation 'org.springframework.security:spring-security-oauth2-resource-server'
-	implementation 'com.nimbusds:nimbus-jose-jwt:9.37.3'
+	implementation 'org.springframework.session:spring-session-jdbc'
 	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
 	// Mail service
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 
 	// AutoMappers
-	implementation 'org.mapstruct:mapstruct:1.5.5.Final'
-	annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+	implementation 'org.mapstruct:mapstruct:1.6.3'
+	annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
 	implementation 'org.modelmapper:modelmapper:3.2.1'
 
 	// Rate Limiter
 	implementation 'com.bucket4j:bucket4j-core:8.10.1'
-  implementation 'com.bucket4j:bucket4j-jcache:8.10.1'
+	implementation 'com.bucket4j:bucket4j-jcache:8.10.1'
 
 	// cache
 	implementation 'org.springframework.boot:spring-boot-starter-cache'
 	implementation 'com.github.ben-manes.caffeine:caffeine:3.1.6'
 
 	// Open Api
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.3'
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13'
 
 	// Migrations
 	implementation 'org.flywaydb:flyway-core'
-  implementation 'org.flywaydb:flyway-database-postgresql'
+	implementation 'org.flywaydb:flyway-database-postgresql'
 }
 
 dependencyManagement {
@@ -90,7 +99,6 @@ dependencyManagement {
 tasks.named('test') {
 	useJUnitPlatform()
 }
-
 
 bootRun {
 	jvmArgs = [
