@@ -3,7 +3,7 @@
 ## Project Shape
 
 - This is a single-module Gradle modular monolith. The Spring Boot entrypoint is `src/main/java/io/github/alexisTrejo11/construction/company/ConstructionCompanyApplication.java`.
-- Use the checked-in `./gradlew` wrapper. The build requires Java 26 (the wrapper uses Gradle 9.4.0); Spring Boot is 3.5.16.
+- Use the checked-in `./gradlew` wrapper. The build requires Java 25 (the wrapper uses Gradle 9.4.0); Spring Boot is 3.5.16.
 - Business capabilities live in `modules/<module>/` as vertical feature slices: a use case normally has its controller, command/query, and handler under `features/<use-case>/`. Put types shared by feature slices in the closest `shared/` package; root `shared/` is only for cross-module technical primitives.
 - Handlers own use-case orchestration and transaction boundaries. Controllers validate and translate HTTP only; JPA entities may contain domain behavior but must not depend on repositories, HTTP, or feature types.
 - Spec-Driven Development docs live in `docs/sdd/`; `docs/sdd/README.md` is their index and planning context, not evidence of implemented behavior or API contracts. `docs/sdd/architecture.md` defines the confirmed package and ownership conventions.
@@ -42,4 +42,4 @@
 
 ## Build Caveat
 
-- The checked-in `Dockerfile` uses Java 26 and the repository's actual layout. The Docker image build still requires a running Docker daemon and must be verified before relying on the image flow.
+- The checked-in `Dockerfile` uses GraalVM Native Image with Java 25 and the repository's actual layout. The Docker image build still requires a running Docker daemon and must be verified before relying on the image flow.
