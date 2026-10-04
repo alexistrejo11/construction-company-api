@@ -1,37 +1,45 @@
+# Local development only. Uses the JVM Dockerfile; native compilation stays in CI.
+#   docker compose up --build
+# Prod-like local run (homelab networks + .env): docker compose -f docker-compose.prod.yml up --build
+name: construction-company-api-dev
+
 services:
-  app:
+  api:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.jvm
+      args:
+        SPRING_PROFILES_ACTIVE: dev
     ports:
       - "8017:8017"
-    env_file:
-      - .env
+    restart: unless-stopped
     environment:
-      SPRING_PROFILES_ACTIVE: prod
-      SERVER_PORT: 8017
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_NAME: ${DB_NAME:-construction_company}
-      DB_USERNAME: ${DB_USERNAME:-postgres}
-      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
-    depends_on:
-      db:
-        condition: service_healthy
-
-  db:
-    image: postgres:17-alpine
-    environment:
-      POSTGRES_DB: ${DB_NAME:-construction_company}
-      POSTGRES_USER: ${DB_USERNAME:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_APPLICATION_NAME: construction-company-api
+      SERVER_PORT: "8017"
+      DB_FILE: /app/data/dev_construction.db
+      FILE_UPLOAD_DIR: /app/uploads
+      APP_NAME: Construction Company API
+      APP_DESCRIPTION: Construction company management API for projects, budgets, expenses, evidence, contractors, and inventory.
+      APP_VERSION: 2.0.0
+      APP_API_BASE_PATH: /v2/api
+      APP_DOCS_PATH: /swagger-ui/index.html
+      APP_OPENAPI_PATH: /api-docs
+      APP_HEALTH_PATH: /actuator/health
+      BOOTSTRAP_ADMIN_EMAIL: admin@example.com
+      BOOTSTRAP_ADMIN_PASSWORD: adminadmin1
+      MAIL_HOST: localhost
+      MAIL_PORT: "1025"
+      MAIL_USERNAME: dev@example.com
+      MAIL_PASSWORD: dev-mail-password
+      MAIL_PROTOCOL: smtp
+      MAIL_CONNECTION_TIMEOUT: "5000"
+      MAIL_TIMEOUT: "5000"
+      MAIL_WRITE_TIMEOUT: "5000"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - dev_data:/app/data
+      - dev_uploads:/app/uploads
 
 volumes:
-  postgres_data:
+  dev_data:
+  dev_uploads:
