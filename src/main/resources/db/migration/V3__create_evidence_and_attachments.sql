@@ -15,7 +15,7 @@ CREATE TABLE attachments (
     original_file_name VARCHAR(255) NOT NULL,
     content_type VARCHAR(100) NOT NULL,
     file_size BIGINT NOT NULL CHECK (file_size >= 0),
-    checksum CHAR(64) NOT NULL,
+    checksum VARCHAR(64) NOT NULL,
     storage_key VARCHAR(100) NOT NULL UNIQUE,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL

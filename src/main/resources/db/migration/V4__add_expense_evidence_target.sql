@@ -3,7 +3,7 @@ CREATE TABLE expenses (
     project_id BIGINT NOT NULL REFERENCES projects(id),
     status VARCHAR(20) NOT NULL CHECK (status IN ('DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'REJECTED')),
     amount NUMERIC(15, 2) NOT NULL CHECK (amount >= 0),
-    currency CHAR(3) NOT NULL CHECK (currency = UPPER(currency)),
+    currency VARCHAR(3) NOT NULL CHECK (currency = UPPER(currency)),
     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL
 );

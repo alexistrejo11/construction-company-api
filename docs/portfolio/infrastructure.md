@@ -8,13 +8,13 @@ Containerized with Docker and shipped by a GitHub Actions pipeline: every pull r
 
 ### 1. Containerization — Docker
 
-Multi-stage build. The first stage uses `eclipse-temurin:26-jdk` and runs the Gradle wrapper; dependencies are resolved in their own layer before the sources are copied, so they stay cached across builds. The final stage is the much smaller `eclipse-temurin:26-jre` and contains only the executable jar. It runs as a dedicated non-root `spring` user with its own writable `uploads/` directory for attachments.
+Multi-stage build. The first stage uses GraalVM Native Image Community Java 25 and runs the Gradle wrapper's `nativeCompile` task; dependencies are resolved in their own layer before the sources are copied, so they stay cached across builds. The final stage is Debian slim and contains only the compiled native executable. It runs as a dedicated non-root `spring` user with its own writable `uploads/` directory for attachments.
 
 **Reference:** https://github.com/alexistrejo11/contruction-company-api/blob/main/Dockerfile
 
 ### 2. CI — Tests on Every Pull Request
 
-On every pull request and push to `main`, GitHub Actions sets up JDK 26 with Gradle caching and runs the full test suite (`./gradlew test`). Nothing is published unless the tests pass.
+On every pull request and push to `main`, GitHub Actions sets up JDK 25 with Gradle caching and runs the full test suite (`./gradlew test`). Nothing is published unless the tests pass.
 
 ### 3. Publish — GitHub Container Registry
 
@@ -48,7 +48,7 @@ All secrets and environment-specific values (database, SMTP, upload directory, b
 
 ```bash
 cp .env.example .env    # fill in values; SQLite needs no database server
-./gradlew bootRun       # starts on http://localhost:8080 with the dev profile
+./gradlew bootRun       # starts on http://localhost:8017 with the dev profile
 ./gradlew test          # runs the integration test suite against H2
 ```
 

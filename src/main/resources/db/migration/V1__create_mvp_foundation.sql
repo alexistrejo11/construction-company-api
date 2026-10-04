@@ -36,7 +36,7 @@ CREATE TABLE projects (
     description TEXT,
     status VARCHAR(20) NOT NULL CHECK (status IN ('PLANNING', 'IN_PROGRESS', 'ON_HOLD', 'COMPLETED', 'CANCELLED')),
     estimated_amount NUMERIC(15, 2) NOT NULL CHECK (estimated_amount >= 0),
-    currency CHAR(3) NOT NULL CHECK (currency = UPPER(currency)),
+    currency VARCHAR(3) NOT NULL CHECK (currency = UPPER(currency)),
     address_line VARCHAR(255), city VARCHAR(255), state VARCHAR(255), postal_code VARCHAR(20), country VARCHAR(255),
     latitude NUMERIC(10, 8) CHECK (latitude BETWEEN -90 AND 90),
     longitude NUMERIC(11, 8) CHECK (longitude BETWEEN -180 AND 180),
