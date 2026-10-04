@@ -4,11 +4,12 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"
+      - "8017:8017"
     env_file:
       - .env
     environment:
       SPRING_PROFILES_ACTIVE: prod
+      SERVER_PORT: 8017
       DB_HOST: db
       DB_PORT: 5432
       DB_NAME: ${DB_NAME:-construction_company}
