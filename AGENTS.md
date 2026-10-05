@@ -42,4 +42,4 @@
 
 ## Build Caveat
 
-- The checked-in `Dockerfile` uses GraalVM Native Image with Java 25 and the repository's actual layout. The Docker image build still requires a running Docker daemon and must be verified before relying on the image flow.
+- The checked-in `Dockerfile` builds the executable jar with Eclipse Temurin 25. The image defaults to the `prod` profile; Compose can override it. The Docker image build still requires a running Docker daemon and must be verified before relying on the image flow.

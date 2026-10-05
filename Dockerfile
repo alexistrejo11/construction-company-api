@@ -1,4 +1,4 @@
-FROM ghcr.io/graalvm/native-image-community:25 AS build
+FROM eclipse-temurin:25-jdk AS build
 
 WORKDIR /workspace
 
@@ -9,22 +9,21 @@ RUN chmod +x gradlew
 RUN ./gradlew --no-daemon dependencies
 
 COPY src src
+RUN ./gradlew --no-daemon bootJar
 
-# Include production-only Flyway configuration during native AOT processing.
-ENV SPRING_PROFILES_ACTIVE=prod
-RUN ./gradlew --no-daemon nativeCompile
-
-FROM debian:bookworm-slim
+FROM eclipse-temurin:25-jre
 
 WORKDIR /app
 
 RUN groupadd --system spring && useradd --system --gid spring spring
-RUN mkdir uploads && chown spring:spring uploads
+RUN mkdir uploads data && chown spring:spring uploads data
 
-COPY --from=build /workspace/build/native/nativeCompile/construction-company-api app
+COPY --from=build /workspace/build/libs/construction-company-api-2.0.0.jar app.jar
 
 USER spring
 
+ENV SPRING_PROFILES_ACTIVE=prod
+
 EXPOSE 8017
 
-ENTRYPOINT ["./app"]
+ENTRYPOINT ["java", "-jar", "app.jar"]

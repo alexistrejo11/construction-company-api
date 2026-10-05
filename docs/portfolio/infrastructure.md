@@ -8,7 +8,7 @@ Containerized with Docker and shipped by a GitHub Actions pipeline: every pull r
 
 ### 1. Containerization — Docker
 
-Multi-stage build. The first stage uses GraalVM Native Image Community Java 25 and runs the Gradle wrapper's `nativeCompile` task; dependencies are resolved in their own layer before the sources are copied, so they stay cached across builds. The final stage is Debian slim and contains only the compiled native executable. It runs as a dedicated non-root `spring` user with its own writable `uploads/` directory for attachments.
+Multi-stage build. The first stage uses Eclipse Temurin JDK 25 and runs the Gradle wrapper's `bootJar` task; dependencies are resolved in their own layer before the sources are copied, so they stay cached across builds. The final stage is a Temurin JRE and contains only the executable jar. It runs as a dedicated non-root `spring` user with its own writable `uploads/` directory for attachments. The image defaults to the `prod` profile; local Compose overrides that when it needs `dev`.
 
 **Reference:** https://github.com/alexistrejo11/contruction-company-api/blob/main/Dockerfile
 

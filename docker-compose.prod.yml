@@ -1,0 +1,31 @@
+# Local replica of ~/homelab/deploys/servers/construction-company-api/docker-compose.yml
+# Same container name, networks, and .env as production; builds the image locally instead of pulling GHCR.
+# Usage: docker compose -f docker-compose.prod.yml up --build
+name: construction-company-api
+
+services:
+  api:
+    build:
+      context: .
+    image: construction-company-api:local
+    container_name: construction-company-api
+    hostname: construction-company-api
+    env_file:
+      - .env
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SERVER_PORT: 8017
+    mem_limit: ${MEM_LIMIT:-384m}
+    cpus: ${CPU_LIMIT:-0.50}
+    ports:
+      - "8017:8017"
+    restart: unless-stopped
+    networks:
+      - infra_central_network
+      - shared_app_network
+
+networks:
+  infra_central_network:
+    external: true
+  shared_app_network:
+    external: true

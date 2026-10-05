@@ -74,6 +74,11 @@ class PhaseElevenRepositoryTest {
         assertThat(expenses.findByBudgetIdOrderByCreatedAtDesc(budget.getId())).hasSize(1);
     }
 
+    @Test
+    void projectGlobalSummaryQueryIsValid() {
+        assertThat(projects.getGlobalSummary().totalProjects()).isZero();
+    }
+
     private User user(String email) {
         User user = new User();
         user.setEmail(email);
