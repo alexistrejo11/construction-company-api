@@ -1,4 +1,4 @@
-# Local development only. Uses the JVM Dockerfile; native compilation stays in CI.
+# Local development only.
 #   docker compose up --build
 # Prod-like local run (homelab networks + .env): docker compose -f docker-compose.prod.yml up --build
 name: construction-company-api-dev
@@ -7,9 +7,6 @@ services:
   api:
     build:
       context: .
-      dockerfile: Dockerfile.jvm
-      args:
-        SPRING_PROFILES_ACTIVE: dev
     ports:
       - "8017:8017"
     restart: unless-stopped
